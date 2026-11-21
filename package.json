@@ -1,0 +1,27 @@
+{
+  "name": "my-childs-story",
+  "version": "0.1.0",
+  "private": true,
+  "description": "My Child's Story — parent-facing developmental story organizer (course MVP, fictional data only).",
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:shared": "npm run build -w shared",
+    "dev": "npm run build:shared && concurrently -k -n shared,server,client -c gray,blue,green \"npm run dev -w shared\" \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build:shared && npm run build -w server && npm run build -w client",
+    "typecheck": "npm run build:shared && npm run typecheck -w server && npm run typecheck -w client",
+    "test": "npm run build:shared && npm run test -w server && npm run test -w client",
+    "start": "NODE_ENV=production node server/dist/index.js"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7",
+    "typescript": "^5.9.3"
+  }
+}
