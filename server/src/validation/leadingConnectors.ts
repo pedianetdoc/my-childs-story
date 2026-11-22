@@ -3,7 +3,9 @@
  *
  * `text` may differ from its `sourceQuote` by at most ONE of these words, and
  * only at the very start. Compared after lowercasing and removing punctuation.
- * This is a fixed list; changing it changes the spec.
+ * This is a fixed, clinician-decided list; changing it changes the spec and the
+ * prompt (server/prompts/history-organizer.v1.md), which must name the same words.
+ * "at" is deliberately excluded: it is also an English preposition ("At home…").
  */
 export const LEADING_CONNECTORS: readonly string[] = [
   'and',
@@ -11,7 +13,6 @@ export const LEADING_CONNECTORS: readonly string[] = [
   'also',
   'so',
   'tapos',
-  'at',
   'saka',
 ];
 

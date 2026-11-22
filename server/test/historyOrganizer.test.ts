@@ -8,6 +8,7 @@ import {
   loadSystemPrompt,
 } from '../src/historyOrganizer/index.js';
 import { loadConfig } from '../src/config.js';
+import { LEADING_CONNECTORS } from '../src/validation/index.js';
 
 describe('history-organizer prompt (spec 3, 4.4, 4.6)', () => {
   const raw = fs.readFileSync(DEFAULT_PROMPT_PATH, 'utf8');
@@ -15,7 +16,19 @@ describe('history-organizer prompt (spec 3, 4.4, 4.6)', () => {
 
   it('is marked DRAFT in the file and in the version string', () => {
     expect(raw).toMatch(/DRAFT — PENDING CLINICIAN REVIEW/);
-    expect(PROMPT_VERSION).toBe('history-organizer.v1-draft');
+    expect(PROMPT_VERSION).toBe('history-organizer.v1-draft2');
+  });
+
+  it('names exactly the validator\'s leading connectors and forbids dropping negations', () => {
+    const line = prompt.split('\n').find((l) => l.startsWith('- `text` is the same span'));
+    expect(line).toBeDefined();
+    const listed = [...(line ?? '').matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+    const connectors = listed.slice(0, LEADING_CONNECTORS.length);
+    expect(connectors).toEqual([...LEADING_CONNECTORS]);
+    expect(line).not.toMatch(/"at"/);
+    for (const negation of ['not', 'no', 'never', 'hindi', 'wala', 'ayaw', 'di']) {
+      expect(line).toContain(`"${negation}"`);
+    }
   });
 
   it('strips the maintainer comment before sending', () => {

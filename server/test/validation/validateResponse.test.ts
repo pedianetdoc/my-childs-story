@@ -163,6 +163,15 @@ describe('AC-05: hostile responses are rejected whole', () => {
     expectRejected(r, 'text_not_in_source_quote');
   });
 
+  it('AC-05: rejects dropping "at", which is not a connector ("At home he cries" → "Home he cries")', () => {
+    const narrative = 'At home he cries when the music stops. He likes trains.';
+    const r = response();
+    r.categories = emptyCategories();
+    r.categories.behavior.push({ text: 'Home he cries.', sourceQuote: 'At home he cries' });
+    r.clarificationQuestions = [];
+    expectRejected(r, 'text_not_in_source_quote', narrative);
+  });
+
   it('AC-05: rejects a text that drops two leading connectors', () => {
     const narrative = 'And then he cries when the music stops. He likes trains.';
     const r = response();
@@ -175,7 +184,7 @@ describe('AC-05: hostile responses are rejected whole', () => {
     expectRejected(r, 'text_not_in_source_quote', narrative);
   });
 
-  it.each(['and', 'then', 'also', 'so', 'tapos', 'at', 'saka'])(
+  it.each(['and', 'then', 'also', 'so', 'tapos', 'saka'])(
     'AC-05: accepts dropping ONE allowed leading connector ("%s") (must PASS)',
     (connector) => {
       const quote = `${connector} umiiyak siya kapag tumigil ang music`;
