@@ -34,7 +34,8 @@ describe('AC-01: Organize My Story sends exactly one request', () => {
     expect(screen.getByRole('status')).toHaveTextContent(/Organizing your story/);
 
     await act(async () => pending.resolve(jsonResponse(200, sampleResult())));
-    await waitFor(() => expect(organizeButton()).toBeEnabled());
+    expect(await screen.findByRole('heading', { name: 'Your organized story' })).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('AC-01: repeated clicks and Enter while waiting do not send a second request', async () => {

@@ -260,3 +260,135 @@ textarea {
   color: var(--accent-strong);
   font-weight: 600;
 }
+
+/* Preview */
+.preview {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.preview h2:focus {
+  outline: none;
+}
+
+.preview h2:focus-visible {
+  outline: 3px solid var(--focus);
+}
+
+.parent-reported-label {
+  margin: 0;
+  font-weight: 600;
+  background: var(--accent-soft);
+  border-left: 4px solid var(--accent);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+}
+
+.categories {
+  display: grid;
+  gap: 1rem;
+}
+
+.category,
+.clarification,
+.parent-notes,
+.confirm {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+}
+
+.category h3,
+.clarifications h3,
+.parent-notes h3 {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+
+.category ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.clarifications,
+.parent-notes {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.clarification {
+  margin: 0;
+}
+
+/* Float keeps the legend inside the box instead of on its border. */
+.clarification legend {
+  float: left;
+  width: 100%;
+  padding: 0;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.clarification > legend + * {
+  clear: both;
+}
+
+.clarification > * + * {
+  margin-top: 0.5rem;
+}
+
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  background: var(--bg);
+}
+
+.choice:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.choice input {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.confirm {
+  border-color: var(--safety-border);
+  background: var(--safety-bg);
+}
+
+.confirm h2 {
+  font-size: 1.05rem;
+}
+
+.confirm p {
+  margin: 0 0 0.75rem;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.empty-result {
+  color: var(--muted);
+}
