@@ -132,14 +132,14 @@ Use this **exact order and parent-facing labels**:
 |---|---|---|
 | `main_concerns` | Main Concerns | Only statements the parent frames as a worry or the reason for the visit |
 | `strengths` | Strengths | What the child does well or enjoys |
-| `communication` | Communication | Understanding, speaking, gestures |
+| `communication` | Communication | Understanding, speaking, gestures, and the languages used with the child at home |
 | `social_interaction_play` | Social Interaction and Play | Play, relating to others |
-| `movement` | Movement | Gross and fine motor |
-| `daily_living` | Daily Living | Eating, sleeping routines, dressing, toileting |
+| `movement` | Movement | Gross and fine motor skills and coordination only (amount of exercise or physical activity goes in Medical and Health) |
+| `daily_living` | Daily Living | Eating, dressing, toileting, everyday routines (sleep and screen time go in Medical and Health) |
 | `learning_thinking` | Learning and Thinking | School, learning, attention to tasks |
 | `behavior` | Behavior | Emotions, reactions, regulation |
-| `medical_health` | Medical and Health | Only parent-volunteered pregnancy/birth, medical, hearing, vision, sleep or medication details |
-| `other` | Other | Relevant statements that fit nowhere else |
+| `medical_health` | Medical and Health | Only parent-volunteered details: pregnancy/birth, medical, hearing, vision, medication; sleep (including bedtime and amount); screen and gadget time; amount of exercise or physical activity; previous assessments, diagnoses or therapies |
+| `other` | Other | Relevant statements that fit nowhere else, such as family situation, caregivers, siblings or recent changes at home |
 
 Do not generate a medical-history checklist. Empty categories stay empty internally and are **omitted** in the preview and downloads. Neither the app nor the document implies that missing means normal or impaired.
 
@@ -335,6 +335,7 @@ Three clinician reviewers then rate, blind to source, the raw narrative, a conve
 |---|---|---|
 | `text` check (4.6.2) | Words of `text` must equal those of `sourceQuote`, optionally minus one leading connector from a fixed list (*and, then, also, so, tapos, saka*); “at” excluded because it is also an English preposition; the prompt names the same six connectors and forbids dropping any other word, especially negations | The earlier contiguous-subsequence check accepted dropped negations (“does not point” → “point”) and dropped trailing words |
 | Splitting (4.6.3) | Non-overlap is guided by the prompt and checked in human evaluation, not enforced by the validator | Repeated phrases in a story make a deterministic overlap check unreliable |
+| Category scopes (4.4) | Home languages → Communication; Movement is motor skills and coordination only; Daily Living is eating, dressing, toileting and routines; Medical and Health adds sleep (including amount), screen/gadget time, amount of exercise, and previous assessments, diagnoses and therapies; family situation → Other | Matches the clinician-reviewed prompt `history-organizer.v1` (22 Nov 2026) |
 
 **v1.1 → v1.2**:
 
