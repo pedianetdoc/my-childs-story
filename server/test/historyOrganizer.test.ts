@@ -14,9 +14,11 @@ describe('history-organizer prompt (spec 3, 4.4, 4.6)', () => {
   const raw = fs.readFileSync(DEFAULT_PROMPT_PATH, 'utf8');
   const prompt = loadSystemPrompt();
 
-  it('is marked DRAFT in the file and in the version string', () => {
-    expect(raw).toMatch(/DRAFT — PENDING CLINICIAN REVIEW/);
-    expect(PROMPT_VERSION).toBe('history-organizer.v1-draft2');
+  it('is the clinician-reviewed version, and the file names the same version string', () => {
+    expect(raw).toMatch(/CLINICIAN-REVIEWED/);
+    expect(raw).not.toMatch(/DRAFT/);
+    expect(PROMPT_VERSION).toBe('history-organizer.v1');
+    expect(raw).toContain(`Prompt version: ${PROMPT_VERSION} (`);
   });
 
   it('names exactly the validator\'s leading connectors and forbids dropping negations', () => {
@@ -33,11 +35,14 @@ describe('history-organizer prompt (spec 3, 4.4, 4.6)', () => {
 
   it('strips the maintainer comment before sending', () => {
     expect(prompt).not.toContain('<!--');
-    expect(prompt).not.toContain('PENDING CLINICIAN REVIEW');
+    expect(prompt).not.toContain('CLINICIAN-REVIEWED');
+    expect(prompt).not.toContain('Prompt version:');
   });
 
   it('lists every category key, in the fixed order', () => {
-    const positions = CATEGORY_KEYS.map((key) => prompt.indexOf(`\`${key}\``));
+    // Positions of the numbered list entries ("1. `main_concerns` — …"), not the
+    // first mention: the prompt also names keys in prose (e.g. "put it in `other`").
+    const positions = CATEGORY_KEYS.map((key, i) => prompt.indexOf(`\n${i + 1}. \`${key}\``));
     expect(positions.every((p) => p >= 0)).toBe(true);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
   });

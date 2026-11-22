@@ -44,7 +44,8 @@ export const CATEGORIES: readonly CategoryDefinition[] = [
   {
     key: 'communication',
     label: 'Communication',
-    scope: 'Understanding, speaking, gestures',
+    scope:
+      'Understanding, speaking, gestures, and the languages used with the child at home',
   },
   {
     key: 'social_interaction_play',
@@ -54,12 +55,14 @@ export const CATEGORIES: readonly CategoryDefinition[] = [
   {
     key: 'movement',
     label: 'Movement',
-    scope: 'Gross and fine motor',
+    scope:
+      'Gross and fine motor skills and coordination only (amount of exercise or physical activity goes in Medical and Health)',
   },
   {
     key: 'daily_living',
     label: 'Daily Living',
-    scope: 'Eating, sleeping routines, dressing, toileting',
+    scope:
+      'Eating, dressing, toileting, everyday routines (sleep and screen time go in Medical and Health)',
   },
   {
     key: 'learning_thinking',
@@ -75,12 +78,13 @@ export const CATEGORIES: readonly CategoryDefinition[] = [
     key: 'medical_health',
     label: 'Medical and Health',
     scope:
-      'Only parent-volunteered pregnancy/birth, medical, hearing, vision, sleep or medication details',
+      'Only parent-volunteered details: pregnancy/birth, medical, hearing, vision, medication; sleep (including bedtime and amount); screen and gadget time; amount of exercise or physical activity; previous assessments, diagnoses or therapies',
   },
   {
     key: 'other',
     label: 'Other',
-    scope: 'Relevant statements that fit nowhere else',
+    scope:
+      'Relevant statements that fit nowhere else, such as family situation, caregivers, siblings or recent changes at home',
   },
 ] as const;
 

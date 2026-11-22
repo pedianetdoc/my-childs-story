@@ -6,16 +6,16 @@ import type { OrganizeStoryRequest } from '@my-childs-story/shared';
 
 /**
  * Version string returned in response metadata. Bump it whenever the prompt file
- * changes. "-draft" until the clinician has reviewed the prompt.
+ * changes. history-organizer.v1 is the clinician-reviewed version (22 Nov 2026).
  */
-export const PROMPT_VERSION = 'history-organizer.v1-draft2';
+export const PROMPT_VERSION = 'history-organizer.v1';
 export const PROMPT_FILE = 'history-organizer.v1.md';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 /** server/prompts, from server/src/historyOrganizer or server/dist/historyOrganizer. */
 export const DEFAULT_PROMPT_PATH = path.resolve(here, '../../prompts', PROMPT_FILE);
 
-/** Removes the leading HTML comment (DRAFT/maintainer notes) so it is never sent to the model. */
+/** Removes the leading HTML comment (review status/maintainer notes) so it is never sent to the model. */
 export function stripLeadingComment(markdown: string): string {
   return markdown.replace(/^\s*<!--[\s\S]*?-->\s*/, '');
 }
