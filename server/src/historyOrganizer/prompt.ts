@@ -8,7 +8,7 @@ import type { OrganizeStoryRequest } from '@my-childs-story/shared';
  * Version string returned in response metadata. Bump it whenever the prompt file
  * changes. "-draft" until the clinician has reviewed the prompt.
  */
-export const PROMPT_VERSION = 'history-organizer.v1-draft';
+export const PROMPT_VERSION = 'history-organizer.v1-draft2';
 export const PROMPT_FILE = 'history-organizer.v1.md';
 
 const here = path.dirname(fileURLToPath(import.meta.url));

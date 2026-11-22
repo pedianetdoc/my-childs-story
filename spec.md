@@ -1,6 +1,6 @@
 # My Child's Story — Core AI Module Specification
 
-**Version:** 1.2 (course MVP)
+**Version:** 1.3 (course MVP)
 **Date:** 22 November 2026
 **Status:** Implementation-ready specification; not clinically validated
 **Core module:** `history-organizer`
@@ -175,11 +175,11 @@ type OrganizeStoryResult = OrganizeStoryResponse & {
 
 ### 4.6 Server validation rules
 
-Reject the **whole** response (no silent repair) if any rule fails.
+Reject the **whole** response (no silent repair) if any of rules 1, 2, 4 or 5 fails. Rule 3 is guidance for the prompt and human evaluation.
 
 1. **Source quote.** After normalization, `sourceQuote` must appear contiguously in the normalized narrative. Normalization applies to both strings: Unicode NFC; collapse runs of whitespace to one space; curly quotes and apostrophes to straight (`“ ” ‘ ’` → `" '`); en/em dashes to `-`; `…` to `...`. Matching is case-sensitive. No composite or paraphrased quotes.
-2. **Text.** `text` must stay in the narrative's language (no translation) and be minimally cleaned at most: trimmed; leading connecting words (“and”, “tapos”, “then”) removed; first letter capitalized; terminal period added. Check: after lowercasing and removing punctuation, `text` must be a contiguous word sequence within `sourceQuote`.
-3. **Splitting.** A passage may be split into **non-overlapping**, contiguous, faithful subspans for different categories (e.g., pencil grip under Movement and dressing under Daily Living). Default to one category per statement; no redundant duplication.
+2. **Text.** `text` must stay in the narrative's language (no translation) and be minimally cleaned at most: trimmed; **one** leading connector removed; first letter capitalized; terminal period added. The leading connectors are a fixed list (`server/src/validation/leadingConnectors.ts`): *and, then, also, so, tapos, saka*. Check: after lowercasing and removing punctuation, the words of `text` must **equal** the words of `sourceQuote`, or equal them minus one leading connector from that list. Dropping any other word fails, including negations (“not”, “hindi”) and trailing words. “At” is not a connector here, because it is also an English preposition (“At home he cries”). The prompt names exactly the same connectors.
+3. **Splitting.** A passage may be split into **non-overlapping**, contiguous, faithful subspans for different categories (e.g., pencil grip under Movement and dressing under Daily Living). Default to one category per statement; no redundant duplication. Overlap is avoided through the prompt and checked during human evaluation (Section 8); the validator does **not** enforce it, so this rule is not a rejection condition.
 4. **Schema.** All ten keys; no extra keys; arrays only; length caps; 0–3 questions; distinct IDs.
 5. **Question screening.** `question` and `reason` must not contain diagnostic labels, severity or urgency words, or treatment advice (deny-list in `server/src/validation/questionDenyList.ts`, e.g., *autism, ASD, ADHD, delay, disorder, normal, abnormal, red flag, urgent, therapy, medication*), and must not contain URLs. This check does **not** apply to `text`/`sourceQuote`: the parent's own words are kept even if they use such terms.
 
@@ -308,7 +308,7 @@ Default file base name `story-YYYY-MM-DD` using the browser's local date; editab
 
 - response accepted or rejected, and why;
 - **coverage**: share of narrative characters covered by at least one `sourceQuote`;
-- category counts and clarification questions, for human review.
+- category counts and clarification questions, for human review, including overlapping or duplicated spans (rule 4.6.3, which the validator does not check).
 
 Three clinician reviewers then rate, blind to source, the raw narrative, a conventional form and the AI output for: missing substantive statements, category placement, fidelity, preserved uncertainty and attribution, question relevance, and reading time. Targets, matching the PRD and the Validation Report's Test T2: **zero material fabricated facts; ≥95% of items faithful; review time no worse than the form.** Source checks and schemas do **not** prove clinical safety or accuracy.
 
@@ -329,7 +329,14 @@ Three clinician reviewers then rate, blind to source, the raw narrative, a conve
 
 **v1.0 → v1.1** (Phase 4 AI review): ten fixed categories including Medical and Health; read-only preview with Edit My Story and regeneration warning; DOCX + PDF export with optional original narrative; `story-YYYY-MM-DD` filename; optional browser voice dictation; 60-second server timeout; `sessionStorage` draft recovery, Clear My Information and `.txt` draft download; new acceptance tests for these.
 
-**v1.1 → v1.2** (this version):
+**v1.2 → v1.3** (this version):
+
+| Area | Change | Reason |
+|---|---|---|
+| `text` check (4.6.2) | Words of `text` must equal those of `sourceQuote`, optionally minus one leading connector from a fixed list (*and, then, also, so, tapos, saka*); “at” excluded because it is also an English preposition; the prompt names the same six connectors and forbids dropping any other word, especially negations | The earlier contiguous-subsequence check accepted dropped negations (“does not point” → “point”) and dropped trailing words |
+| Splitting (4.6.3) | Non-overlap is guided by the prompt and checked in human evaluation, not enforced by the validator | Repeated phrases in a story make a deterministic overlap check unreliable |
+
+**v1.1 → v1.2**:
 
 | Area | Change | Reason |
 |---|---|---|

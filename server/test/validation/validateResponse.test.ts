@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { OrganizeStoryResponse } from '@my-childs-story/shared';
 import { validateOrganizeStoryResponse } from '../../src/validation/index.js';
-import { FICTIONAL_NARRATIVE, validResponse } from '../fixtures/fictionalStory.js';
+import { FICTIONAL_NARRATIVE, emptyCategories, validResponse } from '../fixtures/fictionalStory.js';
 
 function validate(candidate: unknown, narrative = FICTIONAL_NARRATIVE) {
   return validateOrganizeStoryResponse(candidate, narrative);
@@ -119,6 +119,91 @@ describe('AC-05: hostile responses are rejected whole', () => {
       sourceQuote: 'We moved to a new house in June.',
     };
     expectRejected(r, 'text_not_in_source_quote');
+  });
+
+  it('AC-05: rejects a text that drops an English negation ("does not point" → "point")', () => {
+    const narrative = 'He does not point at things he wants. He likes trains.';
+    const r = response();
+    r.categories = emptyCategories();
+    r.categories.communication.push({
+      text: 'Point at things he wants.',
+      sourceQuote: 'He does not point at things he wants.',
+    });
+    r.clarificationQuestions = [];
+    expectRejected(r, 'text_not_in_source_quote', narrative);
+  });
+
+  it('AC-05: rejects a text that drops a Filipino negation ("hindi pa nagsasalita" → "nagsasalita")', () => {
+    const narrative = 'Ang anak ko ay hindi pa nagsasalita. Mahilig siyang sumayaw.';
+    const r = response();
+    r.categories = emptyCategories();
+    r.categories.communication.push({
+      text: 'Nagsasalita.',
+      sourceQuote: 'Ang anak ko ay hindi pa nagsasalita.',
+    });
+    r.clarificationQuestions = [];
+    expectRejected(r, 'text_not_in_source_quote', narrative);
+  });
+
+  it('AC-05: rejects a text that drops trailing words', () => {
+    const r = response();
+    r.categories.movement[0] = {
+      text: 'He holds the spoon in his fist.',
+      sourceQuote: 'Tapos he holds the spoon in his fist when he eats',
+    };
+    expectRejected(r, 'text_not_in_source_quote');
+  });
+
+  it('AC-05: rejects a text that drops a leading word that is not a listed connector', () => {
+    const r = response();
+    r.categories.social_interaction_play[0] = {
+      text: 'Teacher said he plays alone at recess.',
+      sourceQuote: 'His teacher said he plays alone at recess',
+    };
+    expectRejected(r, 'text_not_in_source_quote');
+  });
+
+  it('AC-05: rejects dropping "at", which is not a connector ("At home he cries" → "Home he cries")', () => {
+    const narrative = 'At home he cries when the music stops. He likes trains.';
+    const r = response();
+    r.categories = emptyCategories();
+    r.categories.behavior.push({ text: 'Home he cries.', sourceQuote: 'At home he cries' });
+    r.clarificationQuestions = [];
+    expectRejected(r, 'text_not_in_source_quote', narrative);
+  });
+
+  it('AC-05: rejects a text that drops two leading connectors', () => {
+    const narrative = 'And then he cries when the music stops. He likes trains.';
+    const r = response();
+    r.categories = emptyCategories();
+    r.categories.behavior.push({
+      text: 'He cries when the music stops.',
+      sourceQuote: 'And then he cries when the music stops.',
+    });
+    r.clarificationQuestions = [];
+    expectRejected(r, 'text_not_in_source_quote', narrative);
+  });
+
+  it.each(['and', 'then', 'also', 'so', 'tapos', 'saka'])(
+    'AC-05: accepts dropping ONE allowed leading connector ("%s") (must PASS)',
+    (connector) => {
+      const quote = `${connector} umiiyak siya kapag tumigil ang music`;
+      const narrative = `Mahilig siyang sumayaw. ${quote}. He likes trains.`;
+      const r = response();
+      r.categories = emptyCategories();
+      r.categories.behavior.push({ text: 'Umiiyak siya kapag tumigil ang music.', sourceQuote: quote });
+      r.clarificationQuestions = [];
+      expect(validate(r, narrative).ok).toBe(true);
+    },
+  );
+
+  it('AC-05: rejects a text that is only punctuation after dropping a connector', () => {
+    const narrative = 'He likes trains. Tapos. He sleeps well.';
+    const r = response();
+    r.categories = emptyCategories();
+    r.categories.other.push({ text: '.', sourceQuote: 'Tapos.' });
+    r.clarificationQuestions = [];
+    expectRejected(r, 'text_not_in_source_quote', narrative);
   });
 
   it('AC-05: rejects an extra category key', () => {
