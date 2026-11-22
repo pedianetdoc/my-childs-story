@@ -3,6 +3,7 @@
  * Names follow the spec exactly.
  */
 import type { HistoryCategory } from './categories.js';
+import type { CLARIFICATION_IDS } from './limits.js';
 
 export type AgeUnit = 'months' | 'years';
 
@@ -18,7 +19,7 @@ export type ReportedItem = {
   sourceQuote: string;
 };
 
-export type ClarificationId = 'q1' | 'q2' | 'q3';
+export type ClarificationId = (typeof CLARIFICATION_IDS)[number];
 
 /** One neutral clarification question (spec 4.5). */
 export type Clarification = {
