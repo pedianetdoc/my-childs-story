@@ -1,5 +1,5 @@
 # My Child's Story — Cursor rules
-# Source of truth: spec.md (v1.2). If code conflicts with the spec, follow the spec and flag the conflict.
+# Source of truth: spec.md (v1.3). If code conflicts with the spec, follow the spec and flag the conflict.
 
 ## Project
 - Parent pre-visit app: parent types or dictates a child's developmental story (English/Filipino/Taglish); server LLM sorts the parent's own sentences into 10 fixed categories + 0–3 neutral clarification questions; parent exports Word + PDF.
@@ -32,7 +32,8 @@
 - Exactly 10 category keys, no extras; arrays only; length caps (text/sourceQuote ≤1000, question/reason ≤200).
 - 0–3 questions, ids q1–q3, distinct.
 - sourceQuote must be a substring of the narrative after normalize(): NFC, collapse whitespace, curly quotes → straight, en/em dash → "-", "…" → "...". Case-sensitive.
-- text must be a contiguous word sequence of its sourceQuote after lowercasing and removing punctuation (no paraphrase, no translation).
+- After lowercasing and removing punctuation, the words of text must EQUAL the words of its sourceQuote, optionally minus ONE leading connector from the fixed list in server/src/validation/leadingConnectors.ts (and, then, also, so, tapos, at, saka). No dropped words (e.g. negations like "not"/"hindi", trailing words), no paraphrase, no translation.
+- Span overlap (spec 4.6.3) is not validated; the prompt avoids it and human evaluation checks it.
 - Deny-list (diagnostic/urgency/treatment terms) and URL check apply ONLY to question and reason — never to the parent's words.
 
 ## Product rules

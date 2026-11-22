@@ -11,6 +11,8 @@
  * Matching stays case-sensitive: normalize() never changes letter case.
  */
 
+import { isLeadingConnector } from './leadingConnectors.js';
+
 const DOUBLE_QUOTES = /[“”„‟″]/g; // “ ” „ ‟ ″
 const SINGLE_QUOTES = /[‘’‚‛′]/g; // ‘ ’ ‚ ‛ ′
 const DASHES = /[–—]/g; // – —
@@ -30,7 +32,7 @@ export function normalize(value: string): string {
 
 /**
  * Splits text into lowercase words with all punctuation removed — used for the
- * rule 4.6.2 check that `text` is a contiguous word sequence of its sourceQuote.
+ * rule 4.6.2 check that `text` has the same words as its sourceQuote.
  * Punctuation becomes a word boundary, applied the same way to both strings.
  */
 export function toComparableWords(value: string): string[] {
@@ -39,6 +41,23 @@ export function toComparableWords(value: string): string[] {
     .replace(/[^\p{L}\p{M}\p{N}\s]/gu, ' ')
     .split(/\s+/u)
     .filter((word) => word.length > 0);
+}
+
+/**
+ * Rule 4.6.2: the words of `text` must equal the words of `sourceQuote`, or equal
+ * them minus ONE leading connector from LEADING_CONNECTORS. Both arguments come
+ * from toComparableWords(). Dropping any other word (e.g. a negation such as
+ * "not" or "hindi", or trailing words) fails.
+ */
+export function isMinimallyCleaned(textWords: string[], quoteWords: string[]): boolean {
+  if (textWords.length === 0) return false;
+  if (wordsEqual(textWords, quoteWords)) return true;
+  const [first, ...rest] = quoteWords;
+  return first !== undefined && isLeadingConnector(first) && wordsEqual(textWords, rest);
+}
+
+function wordsEqual(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((word, i) => word === b[i]);
 }
 
 /** True when `needle` is a non-empty contiguous run of words inside `haystack`. */

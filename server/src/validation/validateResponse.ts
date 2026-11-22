@@ -11,7 +11,7 @@ import {
   type OrganizeStoryResponse,
 } from '@my-childs-story/shared';
 import { containsDeniedTerm, containsUrl } from './questionDenyList.js';
-import { isContiguousWordSequence, normalize, toComparableWords } from './normalize.js';
+import { isMinimallyCleaned, normalize, toComparableWords } from './normalize.js';
 
 export type ValidationIssueCode =
   | 'schema' // rule 4.6.4: keys, types, length caps, question count, duplicate ids
@@ -62,10 +62,11 @@ export function validateOrganizeStoryResponse(
         issues.push({ code: 'source_quote_not_found', path: [...basePath, 'sourceQuote'] });
       }
 
-      // Rule 4.6.2: text, lowercased with punctuation removed, must be a
-      // contiguous word sequence within its sourceQuote (no paraphrase/translation).
+      // Rule 4.6.2: text, lowercased with punctuation removed, must have exactly
+      // the words of its sourceQuote, optionally minus ONE leading connector
+      // (no dropped words, paraphrase or translation).
       if (
-        !isContiguousWordSequence(
+        !isMinimallyCleaned(
           toComparableWords(item.text),
           toComparableWords(item.sourceQuote),
         )
