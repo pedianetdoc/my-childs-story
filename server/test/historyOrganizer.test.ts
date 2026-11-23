@@ -8,7 +8,8 @@ import {
   loadSystemPrompt,
 } from '../src/historyOrganizer/index.js';
 import { loadConfig } from '../src/config.js';
-import { LEADING_CONNECTORS } from '../src/validation/index.js';
+import { LEADING_CONNECTORS, validateOrganizeStoryResponse } from '../src/validation/index.js';
+import { LANGUAGE_INSTRUCTIONS, detectLanguage } from '../src/historyOrganizer/index.js';
 
 describe('history-organizer prompt (spec 3, 4.4, 4.6)', () => {
   const raw = fs.readFileSync(DEFAULT_PROMPT_PATH, 'utf8');
@@ -17,7 +18,7 @@ describe('history-organizer prompt (spec 3, 4.4, 4.6)', () => {
   it('is the clinician-reviewed version, and the file names the same version string', () => {
     expect(raw).toMatch(/CLINICIAN-REVIEWED/);
     expect(raw).not.toMatch(/DRAFT/);
-    expect(PROMPT_VERSION).toBe('history-organizer.v1.1');
+    expect(PROMPT_VERSION).toBe('history-organizer.v1.2');
     expect(raw).toContain(`Prompt version: ${PROMPT_VERSION} (`);
   });
 
@@ -78,6 +79,50 @@ describe('buildUserMessage', () => {
       childPronoun,
     });
     expect(message).toContain(`Child's pronoun (chosen by the parent): ${words}`);
+  });
+});
+
+describe('question language (spec 4.5)', () => {
+  const prompt = loadSystemPrompt();
+
+  it('tells the model to use the language specified in the request', () => {
+    expect(prompt).toContain('Write each question in the language specified in the request.');
+    expect(prompt).not.toMatch(/main language/);
+  });
+
+  it('puts the code-decided language instruction in the user message', () => {
+    const english = buildUserMessage({
+      childAge: { value: 4, unit: 'years' },
+      narrative: 'He loves trains. His Lola says he naps after lunch every day.',
+    });
+    expect(english).toContain(`Language for questions and reasons: ${LANGUAGE_INSTRUCTIONS.en}`);
+    const taglish = buildUserMessage({
+      childAge: { value: 3, unit: 'years' },
+      narrative: 'Nag-aalala ako kasi hindi pa siya nagsasalita ng sentences. He loves puzzles.',
+    });
+    expect(taglish).toContain(`Language for questions and reasons: ${LANGUAGE_INSTRUCTIONS.fil}`);
+  });
+
+  /** Each example: the narrative line and the JSON block after it. */
+  function promptExamples(): Array<{ narrative: string; json: unknown }> {
+    const examples: Array<{ narrative: string; json: unknown }> = [];
+    const pattern = /Narrative: `([^`]+)`\s*```json\n([\s\S]*?)\n```/g;
+    for (const match of prompt.matchAll(pattern)) {
+      examples.push({ narrative: match[1] as string, json: JSON.parse(match[2] as string) });
+    }
+    return examples;
+  }
+
+  it('has a Taglish example and an English example, each in the matching question language', () => {
+    const examples = promptExamples();
+    expect(examples).toHaveLength(2);
+    expect(examples.map((e) => detectLanguage(e.narrative))).toEqual(['fil', 'en']);
+  });
+
+  it('both examples pass the real response validator (so the prompt never teaches rejected output)', () => {
+    for (const { narrative, json } of promptExamples()) {
+      expect(validateOrganizeStoryResponse(json, narrative)).toMatchObject({ ok: true });
+    }
   });
 });
 

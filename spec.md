@@ -1,6 +1,6 @@
 # My Child's Story — Core AI Module Specification
 
-**Version:** 1.4 (course MVP)
+**Version:** 1.5 (course MVP)
 **Date:** 22 November 2026
 **Status:** Implementation-ready specification; not clinically validated
 **Core module:** `history-organizer`
@@ -162,7 +162,7 @@ type ReportedItem = {
 
 type Clarification = {
   id: 'q1' | 'q2' | 'q3';
-  question: string;    // ≤200 chars; one neutral factual question, in the narrative's main language
+  question: string;    // ≤200 chars; one neutral factual question, in the language the server decides (below)
   reason: string;      // ≤200 chars; why the narrative left this unclear; no medical claim
 };
 
@@ -176,6 +176,8 @@ type OrganizeStoryResult = OrganizeStoryResponse & {
   meta: { promptVersion: string; model: string };
 };
 ```
+
+**Question language (decided in code, not by the model).** `server/src/historyOrganizer/detectLanguage.ts` counts common Filipino function words (*ang, ng, mga, sa, na, si, siya, niya, ko, ako, ka, mo, po, hindi, wala, ayaw, kasi, pero, tapos, din, rin, lang, naman, yung, ito, iyon, ba*) as a share of all words in the narrative. At least 15% → `fil` (so Taglish counts as Filipino); otherwise `en`. Only function words count, so an English story that mentions a Filipino name or “Lola” stays English. The user message then carries an explicit instruction: “Write every question and reason in English.” or “Write every question and reason in Filipino, matching the parent's mix of Filipino and English, using polite 'po'.” The prompt tells the model to use the language specified in the request. This affects only `question` and `reason`; the parent's words are never translated.
 
 ### 4.6 Server validation rules
 
@@ -255,7 +257,7 @@ Default file base name `story-YYYY-MM-DD` using the browser's local date; editab
 |---|---|
 | Blank, whitespace-only, <20 or >5000 characters | Clear validation message; no AI call; never truncate silently |
 | Invalid age, >1 decimal, or unexpected unit | Clear error; no AI call |
-| English, Filipino or Taglish | Accept; preserve wording; no translation; don't convert parents' words into clinical conclusions |
+| English, Filipino or Taglish | Accept; preserve wording; no translation; don't convert parents' words into clinical conclusions. Clarification questions and reasons use the language decided in code (4.5): English stories get English questions even if they mention Filipino names or “Lola”; Filipino and Taglish stories get Filipino questions with “po” |
 | Parent says “sometimes,” “maybe,” “I don't know,” or attributes to a teacher | Preserve uncertainty and who observed it |
 | Contradictory observations | Keep both; may ask one neutral clarification |
 | Statements span categories | Split only faithful, non-overlapping source spans; place once by default; leftovers go to Other |
@@ -293,7 +295,7 @@ Default file base name `story-YYYY-MM-DD` using the browser's local date; editab
 | AC-04 | **Given** a narrative including volunteered medical details, **when** categorized, **then** they appear in Medical and Health, other unfitted detail appears in Other, and the original input is unchanged. | Unit + human fidelity review |
 | AC-05 | **Given** a mocked response with an invented quote, a missing key, a duplicate question ID, >3 questions, a translated `text`, or a blocked term in a question, **when** validated, **then** it is rejected and the original input remains. | Unit/integration |
 | AC-06 | **Given** a response whose quotes differ from the narrative only in curly vs straight quotes, dashes or whitespace, **when** validated, **then** it is accepted. | Unit |
-| AC-07 | **Given** one reported concern, **when** questions are generated, **then** at most three neutral questions address real uncertainty, in the narrative's main language, and answer / I don't know / skip all work. | UI + clinician review |
+| AC-07 | **Given** one reported concern, **when** questions are generated, **then** at most three neutral questions address real uncertainty, in the language decided by the server (4.5), and answer / I don't know / skip all work. | UI + clinician review |
 | AC-08 | **Given** a browser with speech recognition and microphone permission, **when** the parent presses Start and speaks, **then** text appears in the same editable field, counts toward 5,000 characters, continues after a pause until Stop, and nothing is submitted automatically. | Manual browser test (Chrome desktop, Chrome Android, Safari iOS) |
 | AC-09 | **Given** a browser without speech recognition or a denied permission, **when** the page loads or Start is pressed, **then** a clear message appears and typing works normally. | Manual browser test (Firefox + denied permission) |
 | AC-10 | **Given** dictation set to `fil-PH` and to `en-PH`, **when** a fictional Taglish story is spoken, **then** the transcript is editable before submission. Record word-error notes for the report; no accuracy threshold is claimed. | Manual |
@@ -336,7 +338,13 @@ Three clinician reviewers then rate, blind to source, the raw narrative, a conve
 
 **v1.0 → v1.1** (Phase 4 AI review): ten fixed categories including Medical and Health; read-only preview with Edit My Story and regeneration warning; DOCX + PDF export with optional original narrative; `story-YYYY-MM-DD` filename; optional browser voice dictation; 60-second server timeout; `sessionStorage` draft recovery, Clear My Information and `.txt` draft download; new acceptance tests for these.
 
-**v1.3 → v1.4** (this version):
+**v1.4 → v1.5** (this version):
+
+| Area | Change | Reason |
+|---|---|---|
+| Question language (4.5, 6, AC-07) | The server decides the language of clarification questions and reasons deterministically (share of Filipino function words ≥ 15% → Filipino, else English) and tells the model explicitly; prompt `history-organizer.v1.2` says “the language specified in the request” and adds a fictional English example | Questions sometimes came back in Filipino for English stories |
+
+**v1.3 → v1.4**:
 
 | Area | Change | Reason |
 |---|---|---|

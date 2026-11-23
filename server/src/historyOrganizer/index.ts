@@ -12,3 +12,11 @@ export {
   loadSystemPrompt,
   stripLeadingComment,
 } from './prompt.js';
+export {
+  detectLanguage,
+  filipinoShare,
+  FILIPINO_FUNCTION_WORDS,
+  FILIPINO_SHARE_THRESHOLD,
+  LANGUAGE_INSTRUCTIONS,
+  type QuestionLanguage,
+} from './detectLanguage.js';
