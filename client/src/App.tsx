@@ -3,6 +3,7 @@ import type { ClarificationId, OrganizeStoryRequest } from '@my-childs-story/sha
 import { organizeStoryRequest, type OrganizeOutcome } from './api/organizeStory';
 import { Notices } from './components/Notices';
 import { emptyDraft, type Draft } from './draft/draft';
+import { ExportPanel } from './export/ExportPanel';
 import { StoryForm } from './input/StoryForm';
 import type { ClarificationAnswer } from './preview/ClarificationQuestions';
 import { Preview } from './preview/Preview';
@@ -92,7 +93,9 @@ export function App() {
           activity={draft.activity}
           onActivityChange={(activity) => update({ activity })}
           onEdit={() => showScreen('input')}
-        />
+        >
+          <ExportPanel draft={draft} onChange={update} />
+        </Preview>
       ) : (
         <StoryForm
           ageText={draft.ageText}
