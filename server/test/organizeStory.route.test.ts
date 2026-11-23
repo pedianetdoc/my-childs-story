@@ -151,6 +151,8 @@ describe('POST /api/organize-story — invalid input (AC-02)', () => {
     ['age as a string', { ...validBody, childAge: { value: '3', unit: 'years' } }],
     ['unexpected unit', { ...validBody, childAge: { value: 3, unit: 'weeks' } }],
     ['extra field', { ...validBody, childName: 'Fictional' }],
+    ['unknown pronoun', { ...validBody, childPronoun: 'it' }],
+    ['pronoun not a string', { ...validBody, childPronoun: 1 }],
     ['not an object', [1, 2, 3]],
   ])('AC-02: rejects %s with 400 and makes no AI call', async (_label, body) => {
     const provider = jsonProvider(validResponse());
@@ -193,6 +195,28 @@ describe('POST /api/organize-story — invalid input (AC-02)', () => {
       const res = await post(app, body);
       expect(res.status).toBe(200);
     }
+  });
+
+  it('accepts an optional childPronoun and passes it to the model; omitted means not given', async () => {
+    const provider = mockProvider(() => ({ content: JSON.stringify(emptyResponse()), model: 'm' }));
+    const { app } = setup(provider, { rateLimitMax: 100 });
+    for (const childPronoun of ['she', 'he', 'they'] as const) {
+      const res = await post(app, { ...validBody, childPronoun });
+      expect(res.status).toBe(200);
+    }
+    expect(provider.calls[0]?.user).toContain("Child's pronoun (chosen by the parent): she/her");
+    expect(provider.calls[1]?.user).toContain('he/him');
+    const res = await post(app, validBody);
+    expect(res.status).toBe(200);
+    expect(provider.calls.at(-1)?.user).toContain("Child's pronoun: not given");
+  });
+
+  it('gives a fixed message for an invalid pronoun, never echoing it', async () => {
+    const { app } = setup(jsonProvider(validResponse()));
+    const res = await post(app, { ...validBody, childPronoun: 'SECRET-xyz' });
+    expect(res.status).toBe(400);
+    expect(JSON.stringify(res.body)).toContain('Please choose a girl, a boy or prefer not to say.');
+    expect(JSON.stringify(res.body)).not.toContain('SECRET');
   });
 
   it('rejects malformed JSON with 400 and no AI call', async () => {

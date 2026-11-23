@@ -46,6 +46,7 @@ function friendlyIssueMessage(issue: { code: string; message: string; path: Prop
   const field = issue.path[0];
   if (field === 'childAge') return 'Please enter an age from 0 to 216 months or 0 to 18 years.';
   if (field === 'narrative') return 'Please write or dictate your child’s story.';
+  if (field === 'childPronoun') return 'Please choose a girl, a boy or prefer not to say.';
   return MESSAGES.invalid_request;
 }
 

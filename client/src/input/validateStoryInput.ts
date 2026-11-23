@@ -6,10 +6,17 @@ import {
   ChildAgeSchema,
   NarrativeSchema,
   type AgeUnit,
+  type ChildPronoun,
   type OrganizeStoryRequest,
 } from '@my-childs-story/shared';
 
-export type StoryInput = { ageText: string; unit: AgeUnit; narrative: string };
+export type StoryInput = {
+  ageText: string;
+  unit: AgeUnit;
+  narrative: string;
+  /** Optional; omitted from the request when not chosen. */
+  childPronoun?: ChildPronoun | null;
+};
 export type StoryInputErrors = { age?: string; narrative?: string };
 
 export type StoryInputValidation =
@@ -54,6 +61,10 @@ export function validateStoryInput(input: StoryInput): StoryInputValidation {
   }
   return {
     ok: true,
-    request: { childAge: { value: age.value, unit: input.unit }, narrative: input.narrative },
+    request: {
+      childAge: { value: age.value, unit: input.unit },
+      narrative: input.narrative,
+      ...(input.childPronoun && { childPronoun: input.childPronoun }),
+    },
   };
 }

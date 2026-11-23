@@ -1,6 +1,6 @@
 # CLAUDE.md — My Child's Story
 
-Project instructions for Claude Code. `spec.md` (v1.3) is the source of truth. If code and spec disagree, the spec wins; if the spec seems wrong, stop and say so rather than working around it.
+Project instructions for Claude Code. `spec.md` (v1.4) is the source of truth. If code and spec disagree, the spec wins; if the spec seems wrong, stop and say so rather than working around it.
 
 ## What this app is
 
@@ -37,7 +37,7 @@ Run `npm run typecheck && npm test` before every commit.
 - `server/src/historyOrganizer/` — builds the request, calls the adapter, validates, returns `OrganizeStoryResult`. No Express code here.
 - `server/src/llm/providerAdapter.ts` — the only file that talks to the LLM provider.
 - `server/prompts/history-organizer.v1.md` — the system prompt. Changing it means bumping the version string.
-- `client/src/content/activities.ts` — the three fixed activities. Never generate activities.
+- `client/src/content/activities.ts` — the clinician-approved “In the meantime, connect, play and talk” content: Connect / Play / Talk with example text for six age bands. Use its wording exactly; never generate activities. Age only chooses the example band, never interprets development.
 
 ## Hard rules
 
@@ -62,6 +62,7 @@ Run `npm run typecheck && npm test` before every commit.
 - Preview is read-only. Changes go through **Edit My Story** → confirm → regenerate. Regeneration replaces categories and clarification answers only; keep parent questions, expectations, activity.
 - Narrative: 20–5,000 Unicode code points after trim. Show `X / 5000`. Block extra input; never truncate silently. Same limit for dictated text.
 - Age: 0–216 months or 0–18 years, up to one decimal.
+- Optional “My child is:” a girl / a boy / prefer not to say (default). Never inferred by AI. Fills only `{them}` / `{their}` in activity examples (her/her, him/his, them/their); sent as optional `childPronoun` (`'she' | 'he' | 'they'`, omitted when not chosen); shown as “· Girl” / “· Boy” after the age in exports. No `{` placeholder may ever reach the screen or an export.
 - Server: 32 KB body limit, same-origin CORS, rate limit 10 requests / IP / 15 min (429 on excess), 60 s LLM timeout.
 - Export filename default `story-YYYY-MM-DD` (browser local date), sanitized. Original narrative appended only if the checkbox is ticked. Label: "Parent-reported; not independently verified. Organized with AI assistance and reviewed by the parent."
 

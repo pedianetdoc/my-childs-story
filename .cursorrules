@@ -1,5 +1,5 @@
 # My Child's Story — Cursor rules
-# Source of truth: spec.md (v1.3). If code conflicts with the spec, follow the spec and flag the conflict.
+# Source of truth: spec.md (v1.4). If code conflicts with the spec, follow the spec and flag the conflict.
 
 ## Project
 - Parent pre-visit app: parent types or dictates a child's developmental story (English/Filipino/Taglish); server LLM sorts the parent's own sentences into 10 fixed categories + 0–3 neutral clarification questions; parent exports Word + PDF.
@@ -40,8 +40,9 @@
 - Category order: Main Concerns, Strengths, Communication, Social Interaction and Play, Movement, Daily Living, Learning and Thinking, Behavior, Medical and Health, Other. Omit empty ones; never print "normal", "delayed", "absent".
 - Narrative 20–5000 Unicode code points after trim; live counter "X / 5000"; block extra input; never truncate silently.
 - Age 0–216 months or 0–18 years, max one decimal.
+- Optional "My child is:" a girl / a boy / prefer not to say (default); never inferred by AI. Fills only {them}/{their} in activity examples (her/her, him/his, them/their). Request field childPronoun?: 'she' | 'he' | 'they', omitted when not chosen; server validates it. Export header adds "· Girl" / "· Boy" only when chosen. No "{" placeholder may reach the screen or an export.
 - Preview is read-only; Edit My Story → confirm → regenerate (replace categories + clarification answers only).
-- Exactly three fixed activities from client/src/content/activities.ts; never generate activities.
+- Optional activity "In the meantime, connect, play and talk": clinician-approved text in client/src/content/activities.ts (Connect / Play / Talk, example text for six age bands). Use its wording exactly; never generate activities. Age (years x 12 = months; 36 months = 3-5 band) only chooses the example, never interprets development. At most one option; default none.
 - Export DOCX and PDF from the same state; default filename story-YYYY-MM-DD (local date), sanitized; original narrative appended only if the checkbox is ticked; include the "Parent-reported…Organized with AI assistance" label; embed a Unicode font in the PDF.
 - Keep the fictional-data notice and static safety notice visible on start and preview screens.
 

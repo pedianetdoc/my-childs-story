@@ -84,7 +84,8 @@ describe('AC-16: failed or timed-out request', () => {
     expect(organizeButton()).toBeEnabled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
-    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+    expect(await screen.findByRole('heading', { name: 'Your organized story' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('AC-16: a network failure shows the friendly error and keeps the text', async () => {

@@ -7,10 +7,17 @@ import type { CLARIFICATION_IDS } from './limits.js';
 
 export type AgeUnit = 'months' | 'years';
 
+/**
+ * Optional pronoun the parent chose for the child (spec 4.1, 4.3). Never
+ * inferred by AI. Omitted when the parent did not choose.
+ */
+export type ChildPronoun = 'she' | 'he' | 'they';
+
 /** POST /api/organize-story request body (spec 4.3). */
 export type OrganizeStoryRequest = {
   childAge: { value: number; unit: AgeUnit };
   narrative: string;
+  childPronoun?: ChildPronoun;
 };
 
 /** One parent statement placed in a category (spec 4.5). */
@@ -43,7 +50,8 @@ export type OrganizeStoryResult = OrganizeStoryResponse & {
 
 export type DictationLanguage = 'en-PH' | 'fil-PH';
 
-export type ActivityId = 'communication_moment' | 'child_led_interaction' | 'difficult_moment';
+/** The serve-and-return options (spec section 5 step 5). */
+export type ActivityId = 'connect' | 'play' | 'talk';
 
 export type ActivityStatus = 'not_yet' | 'tried' | 'could_not_try';
 

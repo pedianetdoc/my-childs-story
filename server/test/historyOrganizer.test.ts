@@ -17,7 +17,7 @@ describe('history-organizer prompt (spec 3, 4.4, 4.6)', () => {
   it('is the clinician-reviewed version, and the file names the same version string', () => {
     expect(raw).toMatch(/CLINICIAN-REVIEWED/);
     expect(raw).not.toMatch(/DRAFT/);
-    expect(PROMPT_VERSION).toBe('history-organizer.v1');
+    expect(PROMPT_VERSION).toBe('history-organizer.v1.1');
     expect(raw).toContain(`Prompt version: ${PROMPT_VERSION} (`);
   });
 
@@ -64,6 +64,28 @@ describe('buildUserMessage', () => {
     expect(idA).not.toBe(idB);
     expect(a).toContain(`<<<BEGIN_PARENT_NARRATIVE id=${idA}>>>\nFictional story text here.\n<<<END_PARENT_NARRATIVE id=${idA}>>>`);
     expect(a).toContain('2.5 years');
+    expect(a).toContain("Child's pronoun: not given");
+  });
+
+  it.each([
+    ['she', 'she/her'],
+    ['he', 'he/him'],
+    ['they', 'they/them'],
+  ] as const)('passes the parent-chosen pronoun %s as %s', (childPronoun, words) => {
+    const message = buildUserMessage({
+      childAge: { value: 3, unit: 'years' },
+      narrative: 'Fictional story text here.',
+      childPronoun,
+    });
+    expect(message).toContain(`Child's pronoun (chosen by the parent): ${words}`);
+  });
+});
+
+describe('prompt pronoun rule (spec 4.3)', () => {
+  it('tells the model to use the given pronoun and never guess gender', () => {
+    expect(loadSystemPrompt()).toContain(
+      "In questions and reasons, refer to the child using the pronoun given. If none is given, say 'your child' in English, or 'siya' or 'anak ninyo' in Filipino. Never guess the child's gender.",
+    );
   });
 });
 

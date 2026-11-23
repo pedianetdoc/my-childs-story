@@ -19,10 +19,9 @@ async function organizeTo(result: OrganizeStoryResult = sampleResult(), ...more:
   return fetchMock;
 }
 
+/** Headings of the category sections only (other preview sections are ignored). */
 function categoryHeadings() {
-  return within(screen.getByRole('region', { name: 'Your organized story' }))
-    .getAllByRole('heading', { level: 3 })
-    .map((h) => h.textContent);
+  return Array.from(document.querySelectorAll('[data-category] h3')).map((h) => h.textContent);
 }
 
 describe('AC-03: preview shows populated categories only, in the fixed order', () => {
@@ -33,8 +32,6 @@ describe('AC-03: preview shows populated categories only, in the fixed order', (
       'Strengths',
       'Medical and Health',
       'Other',
-      'Optional questions',
-      'For your appointment',
     ]);
     expect(screen.getByText('He was born at 36 weeks.')).toBeInTheDocument();
   });
@@ -46,7 +43,7 @@ describe('AC-03: preview shows populated categories only, in the fixed order', (
     }
     result.clarificationQuestions = [];
     await organizeTo(result);
-    expect(categoryHeadings().slice(0, 10)).toEqual(CATEGORIES.map((c) => c.label));
+    expect(categoryHeadings()).toEqual(CATEGORIES.map((c) => c.label));
   });
 
   it('AC-03: never describes empty categories as normal, delayed or absent', async () => {
