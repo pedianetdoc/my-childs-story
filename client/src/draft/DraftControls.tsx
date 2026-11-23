@@ -41,7 +41,7 @@ export function DraftControls({ draft, storageWorks, onClear }: Props) {
   };
 
   return (
-    <footer className="draft-controls" aria-labelledby="draft-heading">
+    <section className="draft-controls" aria-labelledby="draft-heading">
       <h2 id="draft-heading">Your draft</h2>
       <p className="hint">{storageWorks ? DRAFT_NOTE : STORAGE_UNAVAILABLE}</p>
       <div className="button-row">
@@ -85,6 +85,6 @@ export function DraftControls({ draft, storageWorks, onClear }: Props) {
           </div>
         </div>
       )}
-    </footer>
+    </section>
   );
 }

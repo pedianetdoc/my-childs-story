@@ -245,6 +245,8 @@ Default file base name `story-YYYY-MM-DD` using the browser's local date; editab
 6. **Download:** Word and PDF (Section 4.8), with the optional original-story checkbox, unchecked by default, labeled **“Also include everything I originally wrote”** and explained as: “Add your full, unorganized description at the end of the document, so your doctor can read your exact words if needed.”
 7. **Draft continuity:** autosave all draft fields to `sessionStorage` after changes. Usually survives refresh in the same tab; not guaranteed after closing the tab, private mode, or storage cleanup. Show a browser leave-page warning when closing the tab with an unsaved story. **Clear My Information** clears storage and memory. **Download My Draft** gives a plain-text `.txt` marked as a draft; import is out of scope. Never say work is safely or permanently saved. Files a parent downloads are theirs to store and share.
 
+**Footer** (every screen: start, preview and download): small, unobtrusive text “© 2026 Discerning Parenting. All Rights Reserved.” with a link to https://discerningparenting.com that opens in a new tab with `rel="noopener noreferrer"`; accessible and readable on mobile.
+
 **Static safety notice** (always visible on the start and preview screens; not AI-triggered): *“This tool does not check for urgent problems. If your child has lost skills they used to have, has a seizure, or you are worried about their safety, contact a doctor now instead of waiting for your appointment.”*
 
 ## 6. Edge Cases & Error Handling
@@ -341,6 +343,7 @@ Three clinician reviewers then rate, blind to source, the raw narrative, a conve
 | Optional activity (5 step 5, 4.7, 4.8, AC-17) | The three placeholder activities are replaced by the clinician-approved “In the meantime, connect, play and talk” serve-and-return content: Connect / Play / Talk, each with example text for six age bands; `activityId` is `'connect' \| 'play' \| 'talk'`; export includes the option's example text | Clinician-approved, practical, age-appropriate ideas for families waiting for an appointment |
 | Age use (5 step 5) | Age chooses the example age band only, never interpreted | Keeps the tool non-diagnostic |
 | Child's pronoun (4.1, 4.3, 4.7, 4.8) | Optional “My child is:” a girl / a boy / prefer not to say (default); fills `{them}` / `{their}` in examples; sent as optional `childPronoun` (`'she' \| 'he' \| 'they'`); prompt `history-organizer.v1.1` uses it in questions and reasons and never guesses gender; kept in the tab draft; “Girl” / “Boy” in the export header when chosen | Natural wording without guessing the child's gender |
+| Footer (5) | “© 2026 Discerning Parenting. All Rights Reserved.” with a link to discerningparenting.com on every screen | Owner attribution |
 
 **v1.2 → v1.3**:
 

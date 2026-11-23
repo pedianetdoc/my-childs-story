@@ -614,3 +614,23 @@ textarea {
 .child-field select {
   max-width: 16rem;
 }
+
+/* Site footer */
+.app-footer {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.app-footer p {
+  margin: 0;
+}
+
+.app-footer a {
+  display: inline-block;
+  padding: 0.35rem 0; /* taller tap target without adding space around the text */
+}
