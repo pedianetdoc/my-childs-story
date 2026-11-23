@@ -92,6 +92,7 @@ Speech recognition runs in the **browser** and never touches our server. Only th
 ### 4.1 Story input (typed or spoken)
 
 - One **age** field (number, up to one decimal place) and a **unit** selector (`months` | `years`). Valid range: 0–216 months or 0–18 years. Age is context only, **not** a basis for developmental interpretation.
+- An optional **“My child is:”** selector next to the age: *a girl* / *a boy* / *prefer not to say* (default: prefer not to say). Not required and never inferred by AI. It is used only to fill the pronoun placeholders `{them}` / `{their}` in the activity example text (girl → her / her; boy → him / his; prefer not to say → them / their; no other word changes), to tell the model which pronoun to use in clarification questions, and as “Girl” / “Boy” in the export header.
 - One **story** field. Typing and dictation write into the **same** editable field.
 - Live counter `X / 5000` (Unicode code points, after trimming). Suggested time: **about five minutes**; this is guidance, not a deadline.
 - Prevent input beyond 5,000 characters and explain the limit. Never truncate silently.
@@ -119,10 +120,13 @@ Speech recognition runs in the **browser** and never touches our server. Only th
 type OrganizeStoryRequest = {
   childAge: { value: number; unit: 'months' | 'years' }; // finite, ≥0, ≤216 months / ≤18 years, ≤1 decimal
   narrative: string; // 20–5000 Unicode code points after trimming
+  childPronoun?: 'she' | 'he' | 'they'; // optional, parent-chosen; omitted when not chosen; validated
 };
 ```
 
 Validate on **both** client and server. Server rejects bodies over 32 KB before parsing.
+
+The prompt (`history-organizer.v1.1`) tells the model: “In questions and reasons, refer to the child using the pronoun given. If none is given, say 'your child' in English, or 'siya' or 'anak ninyo' in Filipino. Never guess the child's gender.”
 
 ### 4.4 Fixed category schema
 
@@ -192,6 +196,7 @@ Source matching validates attribution, **not** semantic or clinical correctness.
 ```ts
 type PreparationDraft = {
   childAge: OrganizeStoryRequest['childAge'];
+  childPronoun?: 'she' | 'he' | 'they';      // optional “My child is” choice; absent = prefer not to say
   originalNarrative: string;                 // never overwritten by the LLM
   dictationLanguage: 'en-PH' | 'fil-PH';
   categories: Record<HistoryCategory, ReportedItem[]>;
@@ -220,7 +225,7 @@ The categorized preview is **read-only** in the MVP. **Edit My Story** returns t
 
 Generated from the **same** draft state. Contents, in order:
 
-1. Header **My Child's Story**; child's age; date.
+1. Header **My Child's Story**; child's age, followed by “· Girl” or “· Boy” only if chosen (e.g., “Child's age: 3 years · Boy”); date.
 2. Label: **“Parent-reported; not independently verified. Organized with AI assistance and reviewed by the parent.”**
 3. Populated categories in the fixed order (empty ones omitted).
 4. Clarification questions with answers, kept separate from the original statements; unanswered ones marked “Not answered” or “Parent doesn't know.”
@@ -335,6 +340,7 @@ Three clinician reviewers then rate, blind to source, the raw narrative, a conve
 |---|---|---|
 | Optional activity (5 step 5, 4.7, 4.8, AC-17) | The three placeholder activities are replaced by the clinician-approved “In the meantime, connect, play and talk” serve-and-return content: Connect / Play / Talk, each with example text for six age bands; `activityId` is `'connect' \| 'play' \| 'talk'`; export includes the option's example text | Clinician-approved, practical, age-appropriate ideas for families waiting for an appointment |
 | Age use (5 step 5) | Age chooses the example age band only, never interpreted | Keeps the tool non-diagnostic |
+| Child's pronoun (4.1, 4.3, 4.7, 4.8) | Optional “My child is:” a girl / a boy / prefer not to say (default); fills `{them}` / `{their}` in examples; sent as optional `childPronoun` (`'she' \| 'he' \| 'they'`); prompt `history-organizer.v1.1` uses it in questions and reasons and never guesses gender; kept in the tab draft; “Girl” / “Boy” in the export header when chosen | Natural wording without guessing the child's gender |
 
 **v1.2 → v1.3**:
 

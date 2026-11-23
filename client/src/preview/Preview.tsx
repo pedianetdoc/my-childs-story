@@ -7,6 +7,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import {
   CATEGORIES,
   type AgeUnit,
+  type ChildPronoun,
   type ClarificationId,
   type OrganizeStoryResult,
 } from '@my-childs-story/shared';
@@ -32,6 +33,7 @@ type Props = {
   /** Used only to choose the activity's example text. */
   ageText: string;
   ageUnit: AgeUnit;
+  childPronoun: ChildPronoun | null;
   onEdit: () => void;
   /** Rendered after the parent's fields (e.g. downloads). */
   children?: ReactNode;
@@ -114,6 +116,7 @@ export function Preview(props: Props) {
         onChange={props.onActivityChange}
         ageText={props.ageText}
         ageUnit={props.ageUnit}
+        pronoun={props.childPronoun ?? 'they'}
       />
 
       {props.children}

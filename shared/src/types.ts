@@ -7,10 +7,17 @@ import type { CLARIFICATION_IDS } from './limits.js';
 
 export type AgeUnit = 'months' | 'years';
 
+/**
+ * Optional pronoun the parent chose for the child (spec 4.1, 4.3). Never
+ * inferred by AI. Omitted when the parent did not choose.
+ */
+export type ChildPronoun = 'she' | 'he' | 'they';
+
 /** POST /api/organize-story request body (spec 4.3). */
 export type OrganizeStoryRequest = {
   childAge: { value: number; unit: AgeUnit };
   narrative: string;
+  childPronoun?: ChildPronoun;
 };
 
 /** One parent statement placed in a category (spec 4.5). */

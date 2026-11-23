@@ -11,7 +11,7 @@
  * Example text may contain exactly two placeholders, {them} and {their}, which
  * fillPronouns() replaces; no other word changes.
  */
-import type { ActivityId, ActivityStatus, AgeUnit } from '@my-childs-story/shared';
+import type { ActivityId, ActivityStatus, AgeUnit, ChildPronoun } from '@my-childs-story/shared';
 
 export const ACTIVITY_HEADING = 'In the meantime, connect, play and talk';
 
@@ -168,7 +168,7 @@ export function ageBandFor(ageText: string, unit: AgeUnit) {
 }
 
 /** The pronoun choice used to fill {them} / {their}. */
-export type ExamplePronoun = 'she' | 'he' | 'they';
+export type ExamplePronoun = ChildPronoun;
 
 const PRONOUN_WORDS: Record<ExamplePronoun, { them: string; their: string }> = {
   she: { them: 'her', their: 'her' },
@@ -181,6 +181,16 @@ export function fillPronouns(text: string, pronoun: ExamplePronoun = 'they'): st
   const words = PRONOUN_WORDS[pronoun];
   return text.replace(/\{them\}/g, words.them).replace(/\{their\}/g, words.their);
 }
+
+/**
+ * The optional "My child is" choices (spec 4.1). "Prefer not to say" is the
+ * default and is stored as null (them / their).
+ */
+export const CHILD_OPTIONS: ReadonlyArray<{ value: ChildPronoun | null; label: string; exportLabel: string | null }> = [
+  { value: null, label: 'prefer not to say', exportLabel: null },
+  { value: 'she', label: 'a girl', exportLabel: 'Girl' },
+  { value: 'he', label: 'a boy', exportLabel: 'Boy' },
+];
 
 export function activityLabel(id: ActivityId): string {
   return ACTIVITY_OPTIONS.find((o) => o.id === id)?.label ?? id;

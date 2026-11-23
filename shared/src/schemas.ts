@@ -74,9 +74,16 @@ export const NarrativeSchema = z
     }
   });
 
+export const CHILD_PRONOUNS = ['she', 'he', 'they'] as const;
+
+export const ChildPronounSchema = z.enum(CHILD_PRONOUNS, {
+  error: 'Please choose a girl, a boy or prefer not to say.',
+});
+
 export const OrganizeStoryRequestSchema = z.strictObject({
   childAge: ChildAgeSchema,
   narrative: NarrativeSchema,
+  childPronoun: ChildPronounSchema.optional(),
 });
 
 // ---------------------------------------------------------------------------

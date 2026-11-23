@@ -8,8 +8,10 @@ import {
   NARRATIVE_MAX_CHARS,
   codePointLength,
   type AgeUnit,
+  type ChildPronoun,
   type OrganizeStoryRequest,
 } from '@my-childs-story/shared';
+import { CHILD_OPTIONS } from '../content/activities';
 import { FICTIONAL_EXAMPLE } from '../content/fictionalExample';
 import { GUIDING_PROMPTS } from '../content/guidingPrompts';
 import { validateStoryInput, type StoryInputErrors } from './validateStoryInput';
@@ -26,6 +28,8 @@ export type StoryFormProps = {
   narrative: string;
   onAgeTextChange: (value: string) => void;
   onUnitChange: (value: AgeUnit) => void;
+  childPronoun: ChildPronoun | null;
+  onChildPronounChange: (value: ChildPronoun | null) => void;
   onNarrativeChange: (value: string) => void;
   dictationLanguage: DictationLanguage;
   onDictationLanguageChange: (value: DictationLanguage) => void;
@@ -89,7 +93,7 @@ export function StoryForm(props: StoryFormProps) {
     // Submitting is always the parent's action; stop listening first.
     voiceRef.current?.stop();
     if (busy) return;
-    const result = validateStoryInput({ ageText, unit, narrative });
+    const result = validateStoryInput({ ageText, unit, narrative, childPronoun: props.childPronoun });
     if (!result.ok) {
       setErrors(result.errors);
       (result.errors.age ? ageRef : storyRef).current?.focus();
@@ -139,6 +143,25 @@ export function StoryForm(props: StoryFormProps) {
           </p>
         )}
       </fieldset>
+
+      <div className="field child-field">
+        <label htmlFor="child-pronoun">My child is:</label>
+        <select
+          id="child-pronoun"
+          value={props.childPronoun ?? ''}
+          onChange={(e) => props.onChildPronounChange((e.target.value || null) as ChildPronoun | null)}
+          aria-describedby="child-pronoun-hint"
+        >
+          {CHILD_OPTIONS.map((option) => (
+            <option key={option.label} value={option.value ?? ''}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <p className="hint" id="child-pronoun-hint">
+          Optional. Only used to say “her”, “him” or “them” in suggested questions and examples.
+        </p>
+      </div>
 
       <section className="guiding-prompts" aria-labelledby="prompts-heading">
         <h2 id="prompts-heading">Things you might mention</h2>

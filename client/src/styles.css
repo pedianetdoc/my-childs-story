@@ -610,3 +610,7 @@ textarea {
 .activity-example p {
   margin: 0;
 }
+
+.child-field select {
+  max-width: 16rem;
+}

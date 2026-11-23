@@ -6,6 +6,7 @@ import type {
   ActivityId,
   ActivityStatus,
   AgeUnit,
+  ChildPronoun,
   OrganizeStoryResult,
 } from '@my-childs-story/shared';
 import type { ClarificationAnswers } from '../preview/ClarificationQuestions';
@@ -17,6 +18,8 @@ export type Draft = {
   /** Age as typed; validated into a number on submit. */
   ageText: string;
   ageUnit: AgeUnit;
+  /** Optional "My child is" choice; null = prefer not to say (the default). Never inferred. */
+  childPronoun: ChildPronoun | null;
   /** The parent's own story. Never overwritten by the LLM. */
   originalNarrative: string;
   dictationLanguage: DictationLanguage;
@@ -37,6 +40,7 @@ export function emptyDraft(): Draft {
   return {
     ageText: '',
     ageUnit: 'years',
+    childPronoun: null,
     originalNarrative: '',
     dictationLanguage: 'en-PH',
     result: null,

@@ -8,6 +8,7 @@ import { CATEGORIES } from '@my-childs-story/shared';
 import {
   ACTIVITY_HEADING,
   ACTIVITY_STATUS_LABELS,
+  CHILD_OPTIONS,
   activityLabel,
   ageBandFor,
   fillPronouns,
@@ -49,7 +50,8 @@ function formatAge(draft: Draft): string {
   const value = draft.ageText.trim();
   const singular = value === '1' || value === '1.0';
   const unit = draft.ageUnit === 'months' ? (singular ? 'month' : 'months') : singular ? 'year' : 'years';
-  return `${value} ${unit}`;
+  const child = CHILD_OPTIONS.find((o) => o.value === draft.childPronoun)?.exportLabel;
+  return child ? `${value} ${unit} · ${child}` : `${value} ${unit}`;
 }
 
 /** Splits free text on line breaks so each line stays its own paragraph. */
@@ -115,7 +117,7 @@ export function buildExportDocument(draft: Draft, now: Date): ExportBlock[] {
     if (band) {
       blocks.push({
         kind: 'paragraph',
-        text: `Example for ${band.label}: ${fillPronouns(band.examples[draft.activity.activityId])}`,
+        text: `Example for ${band.label}: ${fillPronouns(band.examples[draft.activity.activityId], draft.childPronoun ?? 'they')}`,
       });
     }
     blocks.push({ kind: 'paragraph', text: `Status: ${ACTIVITY_STATUS_LABELS[draft.activity.status]}` });

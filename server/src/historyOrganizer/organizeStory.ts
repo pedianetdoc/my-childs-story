@@ -50,7 +50,11 @@ export async function organizeStory(
     const completion = await Promise.race([
       deps.provider.complete({
         system: deps.systemPrompt,
-        user: buildUserMessage({ childAge: request.childAge, narrative }),
+        user: buildUserMessage({
+          childAge: request.childAge,
+          narrative,
+          ...(request.childPronoun && { childPronoun: request.childPronoun }),
+        }),
         signal: controller.signal,
       }),
       timeout,

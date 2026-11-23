@@ -63,6 +63,7 @@ export function isDraft(value: unknown): value is Draft {
   return (
     isString(value.ageText) &&
     (value.ageUnit === 'months' || value.ageUnit === 'years') &&
+    (value.childPronoun === null || ['she', 'he', 'they'].includes(value.childPronoun as string)) &&
     isString(value.originalNarrative) &&
     (value.dictationLanguage === 'en-PH' || value.dictationLanguage === 'fil-PH') &&
     (value.result === null || isResult(value.result)) &&
@@ -83,7 +84,9 @@ export function loadDraft(): Draft | null {
   try {
     const raw = storage.getItem(STORAGE_KEY);
     if (raw === null) return null;
-    const parsed: unknown = JSON.parse(raw);
+    const json: unknown = JSON.parse(raw);
+    // Drafts saved before the pronoun choice existed default to "prefer not to say".
+    const parsed = isRecord(json) && !('childPronoun' in json) ? { ...json, childPronoun: null } : json;
     if (!isDraft(parsed)) {
       storage.removeItem(STORAGE_KEY);
       return null;
@@ -122,6 +125,7 @@ export function hasContent(draft: Draft): boolean {
   return (
     draft.originalNarrative.trim() !== '' ||
     draft.ageText.trim() !== '' ||
+    draft.childPronoun !== empty.childPronoun ||
     draft.result !== null ||
     draft.parentQuestions.trim() !== '' ||
     draft.visitExpectations.trim() !== '' ||

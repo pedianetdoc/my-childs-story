@@ -143,6 +143,7 @@ export function App() {
             onActivityChange={(activity) => update({ activity })}
             ageText={draft.ageText}
             ageUnit={draft.ageUnit}
+            childPronoun={draft.childPronoun}
             onEdit={() => showScreen('input')}
           >
             <ExportPanel draft={draft} onChange={update} />
@@ -154,6 +155,8 @@ export function App() {
             narrative={draft.originalNarrative}
             onAgeTextChange={(ageText) => update({ ageText })}
             onUnitChange={(ageUnit) => update({ ageUnit })}
+            childPronoun={draft.childPronoun}
+            onChildPronounChange={(childPronoun) => update({ childPronoun })}
             onNarrativeChange={(originalNarrative) => update({ originalNarrative })}
             dictationLanguage={draft.dictationLanguage}
             onDictationLanguageChange={(dictationLanguage) => update({ dictationLanguage })}
