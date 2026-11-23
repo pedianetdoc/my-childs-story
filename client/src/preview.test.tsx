@@ -35,6 +35,7 @@ describe('AC-03: preview shows populated categories only, in the fixed order', (
       'Other',
       'Optional questions',
       'For your appointment',
+      'One small activity (optional)',
     ]);
     expect(screen.getByText('He was born at 36 weeks.')).toBeInTheDocument();
   });

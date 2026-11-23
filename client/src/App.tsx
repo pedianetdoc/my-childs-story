@@ -1,44 +1,32 @@
 import { useEffect, useRef, useState } from 'react';
-import type {
-  AgeUnit,
-  ClarificationId,
-  OrganizeStoryRequest,
-  OrganizeStoryResult,
-} from '@my-childs-story/shared';
+import type { ClarificationId, OrganizeStoryRequest } from '@my-childs-story/shared';
 import { organizeStoryRequest, type OrganizeOutcome } from './api/organizeStory';
 import { Notices } from './components/Notices';
+import { emptyDraft, type Draft } from './draft/draft';
 import { StoryForm } from './input/StoryForm';
-import type { ClarificationAnswer, ClarificationAnswers } from './preview/ClarificationQuestions';
+import type { ClarificationAnswer } from './preview/ClarificationQuestions';
 import { Preview } from './preview/Preview';
-import type { DictationLanguage } from './voice/dictationController';
 
 type RequestState =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'error'; message: string };
 
-type Screen = 'input' | 'preview';
-
 export const REGENERATE_WARNING =
   'Organizing again will replace your organized story and your answers to the optional ' +
-  'questions. Your questions for the doctor and what you hope to get from the visit will be kept.';
+  'questions. Your questions for the doctor, what you hope to get from the visit and your ' +
+  'activity will be kept.';
 
 export function App() {
-  const [ageText, setAgeText] = useState('');
-  const [unit, setUnit] = useState<AgeUnit>('years');
-  const [narrative, setNarrative] = useState('');
-  const [dictationLanguage, setDictationLanguage] = useState<DictationLanguage>('en-PH');
+  const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [request, setRequest] = useState<RequestState>({ status: 'idle' });
-  const [result, setResult] = useState<OrganizeStoryResult | null>(null);
-  const [answers, setAnswers] = useState<ClarificationAnswers>({});
-  const [parentQuestions, setParentQuestions] = useState('');
-  const [visitExpectations, setVisitExpectations] = useState('');
-  const [screen, setScreen] = useState<Screen>('input');
   /** A validated request waiting for the parent to confirm regeneration. */
   const [pendingRegenerate, setPendingRegenerate] = useState<OrganizeStoryRequest | null>(null);
   // Guards against a second submission before React re-renders the disabled button.
   const inFlight = useRef(false);
   const confirmRef = useRef<HTMLDivElement>(null);
+
+  const update = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
 
   useEffect(() => {
     if (pendingRegenerate) confirmRef.current?.focus();
@@ -56,12 +44,10 @@ export function App() {
       inFlight.current = false;
     }
     if (outcome.ok) {
-      // Regeneration replaces categories and clarification answers only;
-      // parent questions and visit expectations are kept.
-      setResult(outcome.result);
-      setAnswers({});
+      // Regeneration replaces categories and clarification answers only; parent
+      // questions, visit expectations and the activity are kept.
+      update({ result: outcome.result, clarificationAnswers: {}, screen: 'preview' });
       setRequest({ status: 'idle' });
-      setScreen('preview');
     } else {
       // A failed regeneration keeps the previous organized story.
       setRequest({ status: 'error', message: outcome.message });
@@ -69,19 +55,20 @@ export function App() {
   };
 
   const handleSubmit = (body: OrganizeStoryRequest) => {
-    if (result) {
+    if (draft.result) {
       setPendingRegenerate(body);
       return;
     }
     void organize(body);
   };
 
-  const editStory = () => {
+  const showScreen = (screen: Draft['screen']) => {
     setRequest({ status: 'idle' });
-    setScreen('input');
+    update({ screen });
   };
 
   const loading = request.status === 'loading';
+  const { result } = draft;
 
   return (
     <main className="app">
@@ -91,29 +78,31 @@ export function App() {
       </header>
       <Notices />
 
-      {screen === 'preview' && result ? (
+      {draft.screen === 'preview' && result ? (
         <Preview
           result={result}
-          answers={answers}
+          answers={draft.clarificationAnswers}
           onAnswerChange={(id: ClarificationId, answer: ClarificationAnswer) =>
-            setAnswers((prev) => ({ ...prev, [id]: answer }))
+            setDraft((d) => ({ ...d, clarificationAnswers: { ...d.clarificationAnswers, [id]: answer } }))
           }
-          parentQuestions={parentQuestions}
-          onParentQuestionsChange={setParentQuestions}
-          visitExpectations={visitExpectations}
-          onVisitExpectationsChange={setVisitExpectations}
-          onEdit={editStory}
+          parentQuestions={draft.parentQuestions}
+          onParentQuestionsChange={(parentQuestions) => update({ parentQuestions })}
+          visitExpectations={draft.visitExpectations}
+          onVisitExpectationsChange={(visitExpectations) => update({ visitExpectations })}
+          activity={draft.activity}
+          onActivityChange={(activity) => update({ activity })}
+          onEdit={() => showScreen('input')}
         />
       ) : (
         <StoryForm
-          ageText={ageText}
-          unit={unit}
-          narrative={narrative}
-          onAgeTextChange={setAgeText}
-          onUnitChange={setUnit}
-          onNarrativeChange={setNarrative}
-          dictationLanguage={dictationLanguage}
-          onDictationLanguageChange={setDictationLanguage}
+          ageText={draft.ageText}
+          unit={draft.ageUnit}
+          narrative={draft.originalNarrative}
+          onAgeTextChange={(ageText) => update({ ageText })}
+          onUnitChange={(ageUnit) => update({ ageUnit })}
+          onNarrativeChange={(originalNarrative) => update({ originalNarrative })}
+          dictationLanguage={draft.dictationLanguage}
+          onDictationLanguageChange={(dictationLanguage) => update({ dictationLanguage })}
           onSubmit={handleSubmit}
           busy={loading}
           {...(result && { submitLabel: 'Organize My Story again' })}
@@ -165,10 +154,7 @@ export function App() {
             <button
               type="button"
               className="button button-secondary"
-              onClick={() => {
-                setRequest({ status: 'idle' });
-                setScreen('preview');
-              }}
+              onClick={() => showScreen('preview')}
             >
               Back to my organized story
             </button>

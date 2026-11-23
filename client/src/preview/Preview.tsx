@@ -3,9 +3,11 @@
  * (AC-03, AC-07, AC-11). Only populated categories, in the fixed order, with
  * their display labels. Empty categories are omitted and never described.
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { CATEGORIES, type ClarificationId, type OrganizeStoryResult } from '@my-childs-story/shared';
 import { PARENT_REPORTED_LABEL } from '../content/notices';
+import type { ActivityResponse } from '../draft/draft';
+import { ActivityPicker } from './ActivityPicker';
 import {
   ClarificationQuestions,
   type ClarificationAnswer,
@@ -20,7 +22,11 @@ type Props = {
   onParentQuestionsChange: (value: string) => void;
   visitExpectations: string;
   onVisitExpectationsChange: (value: string) => void;
+  activity: ActivityResponse | null;
+  onActivityChange: (activity: ActivityResponse | null) => void;
   onEdit: () => void;
+  /** Rendered after the parent's fields (e.g. downloads). */
+  children?: ReactNode;
 };
 
 export function Preview(props: Props) {
@@ -94,6 +100,10 @@ export function Preview(props: Props) {
           />
         </div>
       </section>
+
+      <ActivityPicker activity={props.activity} onChange={props.onActivityChange} />
+
+      {props.children}
 
       <button type="button" className="button button-secondary" onClick={props.onEdit}>
         Edit My Story
