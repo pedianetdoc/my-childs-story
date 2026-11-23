@@ -560,3 +560,53 @@ textarea {
 .screen {
   display: contents;
 }
+
+/* Serve and return */
+.activity > p {
+  margin: 0;
+}
+
+.serve-return {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.serve-return summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.9rem;
+}
+
+.serve-return-body {
+  padding: 0 0.9rem 0.75rem;
+}
+
+.serve-return-body h4 {
+  font-size: 1rem;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.serve-return-body ol {
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.serve-return-body a,
+.app-footer a {
+  color: var(--accent-strong);
+}
+
+.activity-example {
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.85rem;
+}
+
+.activity-example p {
+  margin: 0;
+}

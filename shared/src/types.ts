@@ -43,7 +43,8 @@ export type OrganizeStoryResult = OrganizeStoryResponse & {
 
 export type DictationLanguage = 'en-PH' | 'fil-PH';
 
-export type ActivityId = 'communication_moment' | 'child_led_interaction' | 'difficult_moment';
+/** The serve-and-return options (spec section 5 step 5). */
+export type ActivityId = 'connect' | 'play' | 'talk';
 
 export type ActivityStatus = 'not_yet' | 'tried' | 'could_not_try';
 

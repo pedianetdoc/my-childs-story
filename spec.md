@@ -1,6 +1,6 @@
 # My Child's Story — Core AI Module Specification
 
-**Version:** 1.3 (course MVP)
+**Version:** 1.4 (course MVP)
 **Date:** 22 November 2026
 **Status:** Implementation-ready specification; not clinically validated
 **Core module:** `history-organizer`
@@ -47,7 +47,7 @@ React + TypeScript client (HTTPS)
   ├─ age field; story field with live counter; optional voice dictation (Start/Stop, language choice)
   ├─ guiding prompts; static safety notice; fictional-data-only notice
   ├─ read-only categorized preview; Edit My Story; optional clarification answers
-  ├─ parent questions/expectations; one fixed optional activity + feedback
+  ├─ parent questions/expectations; one optional serve-and-return activity (Connect / Play / Talk) + feedback
   ├─ tab-session autosave; Clear My Information; Download My Draft (.txt)
   └─ local .docx / .pdf export, with optional original narrative
               │ POST /api/organize-story (HTTPS, same origin)
@@ -74,7 +74,7 @@ Speech recognition runs in the **browser** and never touches our server. Only th
 | Validation | Zod (or equivalent) + deterministic source-quote matching + question screening |
 | Voice input | Browser Web Speech API (`SpeechRecognition` / `webkitSpeechRecognition`), feature-detected; typed fallback |
 | Temporary work | `sessionStorage` scoped to the current tab; in-memory state for rendering; no server database |
-| Preparation activities | Exactly three fixed, clinician-reviewed entries in `client/src/content/activities.ts`; no AI-generated activities |
+| Preparation activity | “In the meantime, connect, play and talk”: clinician-approved serve-and-return text and three options (Connect / Play / Talk), each with fixed example text for six age bands, in `client/src/content/activities.ts`; no AI-generated activities |
 | Export | Client-generated DOCX (e.g., `docx` library) and PDF (e.g., `pdf-lib`/`jsPDF` with an embedded Unicode font) from the same reviewed state |
 | Tests / CI | Vitest with mocked LLM; GitHub Actions running typecheck, tests, build |
 | Evaluation | `npm run eval`: runs synthetic cases against the real model, **outside CI** (Section 8) |
@@ -204,7 +204,7 @@ type PreparationDraft = {
   parentQuestions: string;                   // unaltered free text
   visitExpectations: string;                 // unaltered free text
   activity?: {
-    activityId: 'communication_moment' | 'child_led_interaction' | 'difficult_moment';
+    activityId: 'connect' | 'play' | 'talk';
     status: 'not_yet' | 'tried' | 'could_not_try';
     notes?: string;
   };
@@ -225,7 +225,7 @@ Generated from the **same** draft state. Contents, in order:
 3. Populated categories in the fixed order (empty ones omitted).
 4. Clarification questions with answers, kept separate from the original statements; unanswered ones marked “Not answered” or “Parent doesn't know.”
 5. Parent questions and visit expectations, verbatim.
-6. Selected activity, status and notes (omitted if none selected).
+6. Selected activity: the chosen option (Connect / Play / Talk), its example text for the child's age band, status and notes (omitted if none selected).
 7. Appendix, **only if** “Also include everything I originally wrote” is checked: the exact original narrative.
 
 Default file base name `story-YYYY-MM-DD` using the browser's local date; editable, with paths and illegal filename characters stripped. Long documents wrap and paginate cleanly. The PDF embeds a Unicode font so Filipino characters (ñ, Ñ) render correctly.
@@ -236,7 +236,7 @@ Default file base name `story-YYYY-MM-DD` using the browser's local date; editab
 2. **Tell the story:** type, dictate, or both, in one field. Review and correct the text.
 3. **Organize My Story:** one AI request; loading state; button disabled while waiting; 60-second server timeout (configurable). This is not a limit on the parent's writing or speaking time.
 4. **Preview:** populated categories in fixed order; “Parent-reported; not independently verified” label; Edit My Story; up to three optional clarification questions (answer / I don't know / skip), each with its reason shown as small helper text; two free-text fields for parent questions and expectations.
-5. **One small activity (optional):** at most one of three fixed, clinician-reviewed activities: (a) notice a communication moment; (b) try a brief child-led interaction; (c) observe a naturally occurring difficult moment. Default: none. Status Not yet / Tried it / Couldn't try it, plus optional notes. Never suggest provoking distress; not therapy.
+5. **In the meantime, connect, play and talk (optional):** clinician-approved serve-and-return content from `client/src/content/activities.ts`: the heading and bridge paragraph; a collapsible “What is serve and return?” explanation (what it is, why it matters with a link to the Center on the Developing Child at Harvard University opening in a new tab with `rel="noopener noreferrer"`, the five simple steps). The parent chooses at most one of **Connect / Play / Talk** (default: none). Only that option's example for the child's age band is shown. Age bands: under 12 months, 12–23 months, 24–35 months, 3–5 years, 6–12 years, 13–18 years, chosen deterministically from the entered age (years × 12 = months; 36 months is the 3–5 band). **Age is used only to choose example text, never to interpret development.** No AI involvement. Status Not yet / Tried it / Couldn't try it, plus optional notes prompted “What did you notice? (For example, what your child did, said or enjoyed.)”.
 6. **Download:** Word and PDF (Section 4.8), with the optional original-story checkbox, unchecked by default, labeled **“Also include everything I originally wrote”** and explained as: “Add your full, unorganized description at the end of the document, so your doctor can read your exact words if needed.”
 7. **Draft continuity:** autosave all draft fields to `sessionStorage` after changes. Usually survives refresh in the same tab; not guaranteed after closing the tab, private mode, or storage cleanup. Show a browser leave-page warning when closing the tab with an unsaved story. **Clear My Information** clears storage and memory. **Download My Draft** gives a plain-text `.txt` marked as a draft; import is out of scope. Never say work is safely or permanently saved. Files a parent downloads are theirs to store and share.
 
@@ -296,7 +296,7 @@ Default file base name `story-YYYY-MM-DD` using the browser's local date; editab
 | AC-14 | **Given** local date 2026-11-22, **when** downloading, **then** the default base filename is `story-2026-11-22` with the correct `.docx`/`.pdf` extension, and a filename containing `/` or `:` is sanitized. | Unit |
 | AC-15 | **Given** a refresh in the same tab with storage available, **when** the page reloads, **then** the draft is restored; **when** Clear My Information is selected, **then** draft and storage are cleared. | UI/integration |
 | AC-16 | **Given** a failed or 60-second-timed-out AI request, **when** the error occurs, **then** the UI offers retry and keeps the text, without exposing internal errors or secrets. | Integration |
-| AC-17 | **Given** any activity, **when** its status or notes are recorded, **then** they appear accurately in exports; the LLM never creates activities. | Unit/UI |
+| AC-17 | **Given** a chosen option (Connect / Play / Talk) and a valid age, **when** the preview shows it and its status or notes are recorded, **then** only that option's example for the child's age band is shown, and the option, example text, status and notes appear accurately in exports; nothing is exported when no option is chosen; the LLM never creates activities. | Unit/UI |
 | AC-18 | **Given** 11 requests from one IP within 15 minutes, **when** the 11th arrives, **then** the server returns 429 and the UI shows a friendly message. | Integration |
 | AC-19 | **Given** the start and preview screens, **when** displayed, **then** the fictional-data notice and the static safety notice are visible. | UI |
 | AC-20 | **Given** a code commit, **when** GitHub Actions runs, **then** typecheck, unit tests and build pass. | CI |
@@ -317,7 +317,7 @@ Three clinician reviewers then rate, blind to source, the raw narrative, a conve
 - Live HTTPS public demo using fictional cases only.
 - Typed **and** voice story entry, with counter, language choice, fallback and no auto-submit.
 - One-call AI categorization into ten categories plus ≤3 clarification questions, validated server-side.
-- Edit My Story with explicit regeneration; parent priorities; one fixed optional activity.
+- Edit My Story with explicit regeneration; parent priorities; one optional serve-and-return activity.
 - DOCX and PDF export from the same state, optional original narrative, `story-YYYY-MM-DD` filename.
 - Tab-scoped autosave, Clear My Information, plain-text draft download.
 - Static safety notice and fictional-data notice visible.
@@ -329,7 +329,14 @@ Three clinician reviewers then rate, blind to source, the raw narrative, a conve
 
 **v1.0 → v1.1** (Phase 4 AI review): ten fixed categories including Medical and Health; read-only preview with Edit My Story and regeneration warning; DOCX + PDF export with optional original narrative; `story-YYYY-MM-DD` filename; optional browser voice dictation; 60-second server timeout; `sessionStorage` draft recovery, Clear My Information and `.txt` draft download; new acceptance tests for these.
 
-**v1.2 → v1.3** (this version):
+**v1.3 → v1.4** (this version):
+
+| Area | Change | Reason |
+|---|---|---|
+| Optional activity (5 step 5, 4.7, 4.8, AC-17) | The three placeholder activities are replaced by the clinician-approved “In the meantime, connect, play and talk” serve-and-return content: Connect / Play / Talk, each with example text for six age bands; `activityId` is `'connect' \| 'play' \| 'talk'`; export includes the option's example text | Clinician-approved, practical, age-appropriate ideas for families waiting for an appointment |
+| Age use (5 step 5) | Age chooses the example age band only, never interpreted | Keeps the tool non-diagnostic |
+
+**v1.2 → v1.3**:
 
 | Area | Change | Reason |
 |---|---|---|

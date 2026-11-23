@@ -10,7 +10,7 @@ import {
   OrganizeStoryResponseSchema,
   type OrganizeStoryResult,
 } from '@my-childs-story/shared';
-import { ACTIVITIES, ACTIVITY_STATUS_LABELS } from '../content/activities';
+import { ACTIVITY_OPTIONS, ACTIVITY_STATUS_LABELS } from '../content/activities';
 import { emptyDraft, type Draft } from './draft';
 
 export const STORAGE_KEY = 'my-childs-story.draft.v1';
@@ -52,7 +52,7 @@ function isActivity(value: unknown): boolean {
   if (value === null) return true;
   return (
     isRecord(value) &&
-    ACTIVITIES.some((a) => a.id === value.activityId) &&
+    ACTIVITY_OPTIONS.some((a) => a.id === value.activityId) &&
     Object.hasOwn(ACTIVITY_STATUS_LABELS, value.status as string) &&
     isString(value.notes)
   );

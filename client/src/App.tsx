@@ -141,6 +141,8 @@ export function App() {
             onVisitExpectationsChange={(visitExpectations) => update({ visitExpectations })}
             activity={draft.activity}
             onActivityChange={(activity) => update({ activity })}
+            ageText={draft.ageText}
+            ageUnit={draft.ageUnit}
             onEdit={() => showScreen('input')}
           >
             <ExportPanel draft={draft} onChange={update} />

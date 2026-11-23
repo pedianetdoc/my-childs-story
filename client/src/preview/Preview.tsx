@@ -4,7 +4,12 @@
  * their display labels. Empty categories are omitted and never described.
  */
 import { useEffect, useRef, type ReactNode } from 'react';
-import { CATEGORIES, type ClarificationId, type OrganizeStoryResult } from '@my-childs-story/shared';
+import {
+  CATEGORIES,
+  type AgeUnit,
+  type ClarificationId,
+  type OrganizeStoryResult,
+} from '@my-childs-story/shared';
 import { PARENT_REPORTED_LABEL } from '../content/notices';
 import type { ActivityResponse } from '../draft/draft';
 import { ActivityPicker } from './ActivityPicker';
@@ -24,6 +29,9 @@ type Props = {
   onVisitExpectationsChange: (value: string) => void;
   activity: ActivityResponse | null;
   onActivityChange: (activity: ActivityResponse | null) => void;
+  /** Used only to choose the activity's example text. */
+  ageText: string;
+  ageUnit: AgeUnit;
   onEdit: () => void;
   /** Rendered after the parent's fields (e.g. downloads). */
   children?: ReactNode;
@@ -101,7 +109,12 @@ export function Preview(props: Props) {
         </div>
       </section>
 
-      <ActivityPicker activity={props.activity} onChange={props.onActivityChange} />
+      <ActivityPicker
+        activity={props.activity}
+        onChange={props.onActivityChange}
+        ageText={props.ageText}
+        ageUnit={props.ageUnit}
+      />
 
       {props.children}
 

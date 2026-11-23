@@ -53,7 +53,7 @@ describe('AC-15: draft continuity', () => {
     fillValidStory();
     await organize();
     fireEvent.change(screen.getByLabelText('Questions you want to ask the doctor'), { target: { value: 'Q?' } });
-    fireEvent.click(screen.getByRole('radio', { name: 'Notice a communication moment' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Connect' }));
     fireEvent.click(screen.getByRole('radio', { name: 'Tried it' }));
     const q1 = screen.getByRole('group', { name: 'Which words does he say now?' });
     fireEvent.click(within(q1).getByRole('radio', { name: 'I don’t know' }));

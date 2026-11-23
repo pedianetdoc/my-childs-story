@@ -17,7 +17,7 @@ export function filledDraft(overrides: Partial<Draft> = {}): Draft {
     clarificationAnswers: { q1: { status: 'answered', answer: 'Mama, dede and ball.' } },
     parentQuestions: 'How can we help him talk more?\nShould we change anything at home?',
     visitExpectations: 'A plan we can use at home.',
-    activity: { activityId: 'communication_moment', status: 'tried', notes: 'He pointed at the ball.' },
+    activity: { activityId: 'connect', status: 'tried', notes: 'He pointed at the ball.' },
     screen: 'preview',
     ...overrides,
   };

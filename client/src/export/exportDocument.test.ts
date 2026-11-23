@@ -1,3 +1,4 @@
+import { AGE_BANDS } from '../content/activities';
 import { filledDraft, FICTIONAL_NARRATIVE } from '../test/draftFixture';
 import {
   EXPORT_HEADINGS,
@@ -84,23 +85,31 @@ describe('AC-12: export content (spec 4.8 order)', () => {
     expect(headings(blocks)).not.toContain(EXPORT_HEADINGS.activity);
   });
 
-  it('AC-17: records the activity, its status and notes exactly', () => {
+  it('AC-17: records the chosen option, its age-band example, status and notes exactly', () => {
     const blocks = buildExportDocument(filledDraft(), NOW);
     expect(texts(blocks)).toEqual(
       expect.arrayContaining([
-        'Activity: Notice a communication moment',
+        'Chosen: Connect',
+        `Example for 2 years (24 to 35 months): ${AGE_BANDS.find((b) => b.id === '24_35m')?.examples.connect}`,
         'Status: Tried it',
         'Notes: He pointed at the ball.',
       ]),
     );
+    expect(headings(blocks)).toContain('In the meantime, connect, play and talk');
+
     const couldNot = buildExportDocument(
-      filledDraft({ activity: { activityId: 'difficult_moment', status: 'could_not_try', notes: '' } }),
+      filledDraft({ ageText: '14', activity: { activityId: 'play', status: 'could_not_try', notes: '' } }),
       NOW,
     );
     expect(texts(couldNot)).toEqual(
-      expect.arrayContaining(['Activity: Observe a naturally occurring difficult moment', 'Status: Couldn’t try it']),
+      expect.arrayContaining([
+        'Chosen: Play',
+        'Example for 13 to 18 years: Do something together that your teen enjoys, such as cooking, a game, music or a walk, and let them lead.',
+        'Status: Couldn’t try it',
+      ]),
     );
     expect(texts(couldNot).some((t) => t.startsWith('Notes:'))).toBe(false);
+    expect(texts(couldNot).join('\n')).not.toContain('{');
   });
 
   it('uses singular units for an age of 1', () => {

@@ -1,35 +1,87 @@
 /**
- * One optional, fixed preparation activity — spec section 5 step 5 (AC-17).
- * Default: none. Status Not yet / Tried it / Couldn't try it, plus notes.
+ * "In the meantime, connect, play and talk" — one optional serve-and-return
+ * activity (spec section 5 step 5, AC-17). Clinician-approved text from
+ * content/activities.ts. The age only chooses which example to show.
  */
-import type { ActivityId, ActivityStatus } from '@my-childs-story/shared';
-import { ACTIVITIES, ACTIVITY_NOTE, ACTIVITY_STATUS_LABELS } from '../content/activities';
+import type { ActivityId, ActivityStatus, AgeUnit } from '@my-childs-story/shared';
+import {
+  ACTIVITY_HEADING,
+  ACTIVITY_INTRO,
+  ACTIVITY_INTRO_EMPHASIS,
+  ACTIVITY_NOTES_PROMPT,
+  ACTIVITY_OPTIONS,
+  ACTIVITY_STATUS_LABELS,
+  CHOOSE_HEADING,
+  FIVE_STEPS,
+  SERVE_AND_RETURN,
+  WHY_IT_MATTERS,
+  ageBandFor,
+  fillPronouns,
+  type ExamplePronoun,
+} from '../content/activities';
 import type { ActivityResponse } from '../draft/draft';
+
+export const NO_AGE_BAND =
+  'Enter your child’s age on the story screen to see an example for your child’s age.';
 
 type Props = {
   activity: ActivityResponse | null;
   onChange: (activity: ActivityResponse | null) => void;
+  ageText: string;
+  ageUnit: AgeUnit;
+  pronoun?: ExamplePronoun;
 };
 
 const STATUSES = Object.keys(ACTIVITY_STATUS_LABELS) as ActivityStatus[];
 
-export function ActivityPicker({ activity, onChange }: Props) {
+export function ActivityPicker({ activity, onChange, ageText, ageUnit, pronoun = 'they' }: Props) {
+  const band = ageBandFor(ageText, ageUnit);
+  const fill = (text: string) => fillPronouns(text, pronoun);
+
   const choose = (id: ActivityId | 'none') => {
     if (id === 'none') onChange(null);
-    // Switching activity keeps status and notes the parent already wrote.
+    // Switching option keeps the status and notes the parent already wrote.
     else onChange({ activityId: id, status: activity?.status ?? 'not_yet', notes: activity?.notes ?? '' });
   };
 
   return (
     <section className="activity" aria-labelledby="activity-heading">
-      <h3 id="activity-heading">One small activity (optional)</h3>
-      <p className="hint" id="activity-note">
-        {ACTIVITY_NOTE}
+      <h3 id="activity-heading">{ACTIVITY_HEADING}</h3>
+      <p>
+        {ACTIVITY_INTRO.slice(0, ACTIVITY_INTRO.lastIndexOf(ACTIVITY_INTRO_EMPHASIS))}
+        <strong>{ACTIVITY_INTRO_EMPHASIS}</strong>.
       </p>
-      <fieldset className="plain-fieldset" aria-describedby="activity-note">
-        <legend className="visually-hidden">Choose an activity</legend>
-        <div className="option-list">
-          <label className="choice choice-block">
+
+      <details className="serve-return">
+        <summary>{SERVE_AND_RETURN.heading}</summary>
+        <div className="serve-return-body">
+          <p>{SERVE_AND_RETURN.text}</p>
+          <h4>{WHY_IT_MATTERS.heading}</h4>
+          <p>{WHY_IT_MATTERS.text}</p>
+          <p>
+            {WHY_IT_MATTERS.link.before}
+            <a href={WHY_IT_MATTERS.link.href} target="_blank" rel="noopener noreferrer">
+              {WHY_IT_MATTERS.link.text}
+              <span className="visually-hidden"> (opens in a new tab)</span>
+            </a>
+            {WHY_IT_MATTERS.link.after}
+          </p>
+          <h4>{FIVE_STEPS.heading}</h4>
+          <ol>
+            {FIVE_STEPS.steps.map((step) => (
+              <li key={step.label}>
+                <strong>{step.label}</strong> {fill(step.text)}
+              </li>
+            ))}
+          </ol>
+          <p>{FIVE_STEPS.closing}</p>
+        </div>
+      </details>
+
+      <fieldset className="plain-fieldset">
+        <legend className="field-legend">{CHOOSE_HEADING}</legend>
+        <div className="choice-row">
+          <label className="choice">
             <input
               type="radio"
               name="activity"
@@ -37,21 +89,18 @@ export function ActivityPicker({ activity, onChange }: Props) {
               checked={activity === null}
               onChange={() => choose('none')}
             />
-            <span>No activity</span>
+            <span>None for now</span>
           </label>
-          {ACTIVITIES.map((a) => (
-            <label key={a.id} className="choice choice-block">
+          {ACTIVITY_OPTIONS.map((option) => (
+            <label key={option.id} className="choice">
               <input
                 type="radio"
                 name="activity"
-                value={a.id}
-                checked={activity?.activityId === a.id}
-                onChange={() => choose(a.id)}
+                value={option.id}
+                checked={activity?.activityId === option.id}
+                onChange={() => choose(option.id)}
               />
-              <span>
-                {a.title}
-                {a.instructions && <span className="hint choice-detail">{a.instructions}</span>}
-              </span>
+              <span>{option.label}</span>
             </label>
           ))}
         </div>
@@ -59,8 +108,19 @@ export function ActivityPicker({ activity, onChange }: Props) {
 
       {activity && (
         <>
+          {band ? (
+            <div className="activity-example" aria-live="polite">
+              <p className="hint">Example for {band.label}</p>
+              <p>
+                <strong>{ACTIVITY_OPTIONS.find((o) => o.id === activity.activityId)?.label}:</strong>{' '}
+                {fill(band.examples[activity.activityId])}
+              </p>
+            </div>
+          ) : (
+            <p className="hint">{NO_AGE_BAND}</p>
+          )}
           <fieldset className="plain-fieldset">
-            <legend className="field-legend">How did it go?</legend>
+            <legend className="field-legend">After you try it</legend>
             <div className="choice-row">
               {STATUSES.map((status) => (
                 <label key={status} className="choice">
@@ -77,7 +137,7 @@ export function ActivityPicker({ activity, onChange }: Props) {
             </div>
           </fieldset>
           <div className="field">
-            <label htmlFor="activity-notes">Notes (optional)</label>
+            <label htmlFor="activity-notes">{ACTIVITY_NOTES_PROMPT}</label>
             <textarea
               id="activity-notes"
               rows={3}

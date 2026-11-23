@@ -1,6 +1,6 @@
 # CLAUDE.md — My Child's Story
 
-Project instructions for Claude Code. `spec.md` (v1.3) is the source of truth. If code and spec disagree, the spec wins; if the spec seems wrong, stop and say so rather than working around it.
+Project instructions for Claude Code. `spec.md` (v1.4) is the source of truth. If code and spec disagree, the spec wins; if the spec seems wrong, stop and say so rather than working around it.
 
 ## What this app is
 
@@ -37,7 +37,7 @@ Run `npm run typecheck && npm test` before every commit.
 - `server/src/historyOrganizer/` — builds the request, calls the adapter, validates, returns `OrganizeStoryResult`. No Express code here.
 - `server/src/llm/providerAdapter.ts` — the only file that talks to the LLM provider.
 - `server/prompts/history-organizer.v1.md` — the system prompt. Changing it means bumping the version string.
-- `client/src/content/activities.ts` — the three fixed activities. Never generate activities.
+- `client/src/content/activities.ts` — the clinician-approved “In the meantime, connect, play and talk” content: Connect / Play / Talk with example text for six age bands. Use its wording exactly; never generate activities. Age only chooses the example band, never interprets development.
 
 ## Hard rules
 

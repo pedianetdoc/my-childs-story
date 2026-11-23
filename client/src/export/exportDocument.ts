@@ -5,7 +5,13 @@
  * result's, copied as plain text; nothing is generated here.
  */
 import { CATEGORIES } from '@my-childs-story/shared';
-import { ACTIVITY_STATUS_LABELS, activityTitle } from '../content/activities';
+import {
+  ACTIVITY_HEADING,
+  ACTIVITY_STATUS_LABELS,
+  activityLabel,
+  ageBandFor,
+  fillPronouns,
+} from '../content/activities';
 import type { Draft } from '../draft/draft';
 
 export type ExportBlock =
@@ -26,7 +32,7 @@ export const EXPORT_HEADINGS = {
   clarifications: 'Clarification questions',
   parentQuestions: 'My questions for the doctor',
   visitExpectations: 'What I hope to get from this visit',
-  activity: 'Preparation activity',
+  activity: ACTIVITY_HEADING,
   appendix: 'Appendix: Everything I originally wrote',
 } as const;
 
@@ -103,7 +109,15 @@ export function buildExportDocument(draft: Draft, now: Date): ExportBlock[] {
 
   if (draft.activity) {
     blocks.push({ kind: 'heading', text: EXPORT_HEADINGS.activity });
-    blocks.push({ kind: 'paragraph', text: `Activity: ${activityTitle(draft.activity.activityId)}` });
+    blocks.push({ kind: 'paragraph', text: `Chosen: ${activityLabel(draft.activity.activityId)}` });
+    // Age only chooses which example text is shown; it is never interpreted.
+    const band = ageBandFor(draft.ageText, draft.ageUnit);
+    if (band) {
+      blocks.push({
+        kind: 'paragraph',
+        text: `Example for ${band.label}: ${fillPronouns(band.examples[draft.activity.activityId])}`,
+      });
+    }
     blocks.push({ kind: 'paragraph', text: `Status: ${ACTIVITY_STATUS_LABELS[draft.activity.status]}` });
     if (draft.activity.notes.trim()) blocks.push(...verbatimParagraphs(`Notes: ${draft.activity.notes}`));
   }
