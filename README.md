@@ -9,7 +9,7 @@
 
 > **Fictional data only. Not for clinical use.** This is a course MVP and educational prototype. Do not enter or speak real names, health information or patient details.
 
-**Live demo:** _[add your Replit URL here]_
+**Live demo:** [my-childs-story.replit.app](https://my-childs-story.replit.app)
 
 ---
 
