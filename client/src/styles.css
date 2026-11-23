@@ -528,3 +528,35 @@ textarea {
 .checkbox-field label {
   font-weight: 600;
 }
+
+/* Draft controls */
+.draft-controls {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.draft-controls h2 {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.draft-controls .hint {
+  margin: 0;
+}
+
+.button-quiet {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+.restored {
+  margin-bottom: 1rem;
+}
+
+.screen {
+  display: contents;
+}

@@ -63,3 +63,50 @@ masyadong nakikipaglaro sa mga pinsan niya."
 |---|---|---|---|
 | | | en-PH | |
 | | | fil-PH | |
+
+## Export (spec 4.8)
+
+Content, order, the appendix and file names are unit-tested
+(`client/src/export/*.test.ts`). These checks cover opening the real files.
+
+### AC-12 / AC-13 / AC-14 — Word and PDF files
+
+1. Organize the fictional example story. Answer one question, choose "I don't
+   know" for another, type parent questions and expectations, pick an activity
+   with status and notes.
+2. Download Word and PDF with "Also include everything I originally wrote"
+   **unchecked**. Open both. Confirm the same content, the label
+   "Parent-reported; not independently verified. Organized with AI assistance
+   and reviewed by the parent.", and no original-story appendix.
+3. Tick the box, download both again. Confirm the exact original story is at the
+   end of both.
+4. Confirm the default name is `story-YYYY-MM-DD` (today's local date) and that
+   typing `a/b:c` saves as `b-c`.
+5. In the PDF, confirm ñ and Ñ display correctly and long text wraps across
+   pages without clipping.
+
+| Date | Browser / device | Word opens in | Result | Notes |
+|---|---|---|---|---|
+| | Chrome desktop | Word / LibreOffice | | |
+
+### iOS Safari download
+
+1. On an iPhone, download Word and PDF.
+2. Confirm each file downloads or opens in a new tab, and can be shared or saved.
+
+| Date | iOS / Safari version | Result | Notes |
+|---|---|---|---|
+| | | | |
+
+## Draft continuity (AC-15)
+
+Restore, Clear My Information, the draft `.txt` and the leave-page warning are
+unit-tested (`client/src/draft.test.tsx`). Check once in a real browser:
+
+1. Type a story, refresh: the story is still there.
+2. Close the tab: the browser asks before leaving.
+3. Clear My Information → confirm: the story is gone; refresh stays empty.
+
+| Date | Browser / device | Result | Notes |
+|---|---|---|---|
+| | | | |

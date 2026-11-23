@@ -3,6 +3,8 @@ import type { ClarificationId, OrganizeStoryRequest } from '@my-childs-story/sha
 import { organizeStoryRequest, type OrganizeOutcome } from './api/organizeStory';
 import { Notices } from './components/Notices';
 import { emptyDraft, type Draft } from './draft/draft';
+import { DraftControls } from './draft/DraftControls';
+import { clearDraft, hasContent, loadDraft, saveDraft } from './draft/storage';
 import { ExportPanel } from './export/ExportPanel';
 import { StoryForm } from './input/StoryForm';
 import type { ClarificationAnswer } from './preview/ClarificationQuestions';
@@ -19,7 +21,12 @@ export const REGENERATE_WARNING =
   'activity will be kept.';
 
 export function App() {
-  const [draft, setDraft] = useState<Draft>(emptyDraft);
+  const [restored] = useState(loadDraft);
+  const [draft, setDraft] = useState<Draft>(() => restored ?? emptyDraft());
+  const [storageWorks, setStorageWorks] = useState(true);
+  const [cleared, setCleared] = useState(false);
+  /** Bumped on Clear My Information so every form remounts empty. */
+  const [resetKey, setResetKey] = useState(0);
   const [request, setRequest] = useState<RequestState>({ status: 'idle' });
   /** A validated request waiting for the parent to confirm regeneration. */
   const [pendingRegenerate, setPendingRegenerate] = useState<OrganizeStoryRequest | null>(null);
@@ -32,6 +39,37 @@ export function App() {
   useEffect(() => {
     if (pendingRegenerate) confirmRef.current?.focus();
   }, [pendingRegenerate]);
+
+  // Autosave to this tab's sessionStorage after every change (AC-15).
+  const content = hasContent(draft);
+  useEffect(() => {
+    if (content) {
+      setStorageWorks(saveDraft(draft));
+      setCleared(false);
+    } else {
+      clearDraft();
+    }
+  }, [draft, content]);
+
+  // Warn before closing the tab while there is a story; recovery is not guaranteed.
+  useEffect(() => {
+    if (!content) return undefined;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [content]);
+
+  const clearEverything = () => {
+    clearDraft();
+    setDraft(emptyDraft());
+    setRequest({ status: 'idle' });
+    setPendingRegenerate(null);
+    setResetKey((k) => k + 1);
+    setCleared(true);
+  };
 
   const organize = async (body: OrganizeStoryRequest) => {
     if (inFlight.current) return;
@@ -78,92 +116,106 @@ export function App() {
         <p className="subtitle">Make the most of your developmental assessment appointment.</p>
       </header>
       <Notices />
+      {restored && hasContent(restored) && !cleared && draft === restored && (
+        <p className="status restored" role="status">
+          We brought back the draft from this tab.
+        </p>
+      )}
+      {cleared && (
+        <p className="status" role="status">
+          Your information has been cleared from this tab.
+        </p>
+      )}
 
-      {draft.screen === 'preview' && result ? (
-        <Preview
-          result={result}
-          answers={draft.clarificationAnswers}
-          onAnswerChange={(id: ClarificationId, answer: ClarificationAnswer) =>
-            setDraft((d) => ({ ...d, clarificationAnswers: { ...d.clarificationAnswers, [id]: answer } }))
-          }
-          parentQuestions={draft.parentQuestions}
-          onParentQuestionsChange={(parentQuestions) => update({ parentQuestions })}
-          visitExpectations={draft.visitExpectations}
-          onVisitExpectationsChange={(visitExpectations) => update({ visitExpectations })}
-          activity={draft.activity}
-          onActivityChange={(activity) => update({ activity })}
-          onEdit={() => showScreen('input')}
-        >
-          <ExportPanel draft={draft} onChange={update} />
-        </Preview>
-      ) : (
-        <StoryForm
-          ageText={draft.ageText}
-          unit={draft.ageUnit}
-          narrative={draft.originalNarrative}
-          onAgeTextChange={(ageText) => update({ ageText })}
-          onUnitChange={(ageUnit) => update({ ageUnit })}
-          onNarrativeChange={(originalNarrative) => update({ originalNarrative })}
-          dictationLanguage={draft.dictationLanguage}
-          onDictationLanguageChange={(dictationLanguage) => update({ dictationLanguage })}
-          onSubmit={handleSubmit}
-          busy={loading}
-          {...(result && { submitLabel: 'Organize My Story again' })}
-        >
-          {pendingRegenerate && (
-            <div
-              className="confirm"
-              role="alertdialog"
-              aria-labelledby="confirm-heading"
-              aria-describedby="confirm-text"
-              tabIndex={-1}
-              ref={confirmRef}
-            >
-              <h2 id="confirm-heading">Organize your story again?</h2>
-              <p id="confirm-text">{REGENERATE_WARNING}</p>
-              <div className="button-row">
-                <button
-                  type="button"
-                  className="button button-primary"
-                  onClick={() => void organize(pendingRegenerate)}
-                >
-                  Yes, organize again
-                </button>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => setPendingRegenerate(null)}
-                >
-                  Cancel
+      <div key={resetKey} className="screen">
+        {draft.screen === 'preview' && result ? (
+          <Preview
+            result={result}
+            answers={draft.clarificationAnswers}
+            onAnswerChange={(id: ClarificationId, answer: ClarificationAnswer) =>
+              setDraft((d) => ({ ...d, clarificationAnswers: { ...d.clarificationAnswers, [id]: answer } }))
+            }
+            parentQuestions={draft.parentQuestions}
+            onParentQuestionsChange={(parentQuestions) => update({ parentQuestions })}
+            visitExpectations={draft.visitExpectations}
+            onVisitExpectationsChange={(visitExpectations) => update({ visitExpectations })}
+            activity={draft.activity}
+            onActivityChange={(activity) => update({ activity })}
+            onEdit={() => showScreen('input')}
+          >
+            <ExportPanel draft={draft} onChange={update} />
+          </Preview>
+        ) : (
+          <StoryForm
+            ageText={draft.ageText}
+            unit={draft.ageUnit}
+            narrative={draft.originalNarrative}
+            onAgeTextChange={(ageText) => update({ ageText })}
+            onUnitChange={(ageUnit) => update({ ageUnit })}
+            onNarrativeChange={(originalNarrative) => update({ originalNarrative })}
+            dictationLanguage={draft.dictationLanguage}
+            onDictationLanguageChange={(dictationLanguage) => update({ dictationLanguage })}
+            onSubmit={handleSubmit}
+            busy={loading}
+            {...(result && { submitLabel: 'Organize My Story again' })}
+          >
+            {pendingRegenerate && (
+              <div
+                className="confirm"
+                role="alertdialog"
+                aria-labelledby="confirm-heading"
+                aria-describedby="confirm-text"
+                tabIndex={-1}
+                ref={confirmRef}
+              >
+                <h2 id="confirm-heading">Organize your story again?</h2>
+                <p id="confirm-text">{REGENERATE_WARNING}</p>
+                <div className="button-row">
+                  <button
+                    type="button"
+                    className="button button-primary"
+                    onClick={() => void organize(pendingRegenerate)}
+                  >
+                    Yes, organize again
+                  </button>
+                  <button
+                    type="button"
+                    className="button button-secondary"
+                    onClick={() => setPendingRegenerate(null)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+            {loading && (
+              <p className="status" role="status">
+                Organizing your story. This can take up to a minute.
+              </p>
+            )}
+            {request.status === 'error' && (
+              <div className="request-error" role="alert">
+                <p>{request.message}</p>
+                {/* Submits the story as it is now, through the same validation. */}
+                <button type="submit" className="button button-secondary">
+                  Try again
                 </button>
               </div>
-            </div>
-          )}
-          {loading && (
-            <p className="status" role="status">
-              Organizing your story. This can take up to a minute.
-            </p>
-          )}
-          {request.status === 'error' && (
-            <div className="request-error" role="alert">
-              <p>{request.message}</p>
-              {/* Submits the story as it is now, through the same validation. */}
-              <button type="submit" className="button button-secondary">
-                Try again
+            )}
+            {result && !pendingRegenerate && !loading && (
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => showScreen('preview')}
+              >
+                Back to my organized story
               </button>
-            </div>
-          )}
-          {result && !pendingRegenerate && !loading && (
-            <button
-              type="button"
-              className="button button-secondary"
-              onClick={() => showScreen('preview')}
-            >
-              Back to my organized story
-            </button>
-          )}
-        </StoryForm>
-      )}
+            )}
+          </StoryForm>
+        )}
+      </div>
+
+      <DraftControls draft={draft} storageWorks={storageWorks} onClear={clearEverything} />
     </main>
   );
 }
