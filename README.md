@@ -102,6 +102,12 @@ npm start           # serve the production build on $PORT
 
 `.replit` builds with `npm run build` and runs `npm start` (Autoscale). The server listens on `$PORT` on `0.0.0.0` and serves the client from the same origin. Set `LLM_API_KEY`, `LLM_MODEL` and, if needed, `LLM_BASE_URL`, `LLM_TIMEOUT_MS` and `RATE_LIMIT_MAX` as Replit Secrets.
 
+## Monitoring
+
+- **Replit deployment analytics and logs** are enabled for requests, errors and uptime.
+- **Health check:** `GET /api/health` responds with `{"status":"ok"}`.
+- **No story content in monitoring, by design** (spec section 6): the server logs one line per organize request with only the status, duration and an error category (for example `organize-story status=200 durationMs=1840`). Stories, transcripts and AI output are never logged, and there are no analytics that capture story content.
+
 ## Project documents
 
 | File | What it is |
