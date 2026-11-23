@@ -1,5 +1,5 @@
 # My Child's Story — Cursor rules
-# Source of truth: spec.md (v1.4). If code conflicts with the spec, follow the spec and flag the conflict.
+# Source of truth: spec.md (v1.5). If code conflicts with the spec, follow the spec and flag the conflict.
 
 ## Project
 - Parent pre-visit app: parent types or dictates a child's developmental story (English/Filipino/Taglish); server LLM sorts the parent's own sentences into 10 fixed categories + 0–3 neutral clarification questions; parent exports Word + PDF.
@@ -35,6 +35,7 @@
 - After lowercasing and removing punctuation, the words of text must EQUAL the words of its sourceQuote, optionally minus ONE leading connector from the fixed list in server/src/validation/leadingConnectors.ts (and, then, also, so, tapos, saka). No dropped words (e.g. negations like "not"/"hindi", trailing words), no paraphrase, no translation.
 - Span overlap (spec 4.6.3) is not validated; the prompt avoids it and human evaluation checks it.
 - Deny-list (diagnostic/urgency/treatment terms) and URL check apply ONLY to question and reason — never to the parent's words.
+- Question/reason language is decided in code (server/src/historyOrganizer/detectLanguage.ts): Filipino function words >= 15% of all words -> 'fil' (Taglish counts as Filipino), else 'en'. Send the explicit instruction in the user message; never let the model choose. English stories that mention Filipino names or "Lola" stay English.
 
 ## Product rules
 - Category order: Main Concerns, Strengths, Communication, Social Interaction and Play, Movement, Daily Living, Learning and Thinking, Behavior, Medical and Health, Other. Omit empty ones; never print "normal", "delayed", "absent".

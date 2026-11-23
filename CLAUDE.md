@@ -1,6 +1,6 @@
 # CLAUDE.md — My Child's Story
 
-Project instructions for Claude Code. `spec.md` (v1.4) is the source of truth. If code and spec disagree, the spec wins; if the spec seems wrong, stop and say so rather than working around it.
+Project instructions for Claude Code. `spec.md` (v1.5) is the source of truth. If code and spec disagree, the spec wins; if the spec seems wrong, stop and say so rather than working around it.
 
 ## What this app is
 
@@ -55,6 +55,7 @@ Run `npm run typecheck && npm test` before every commit.
 - Checks (spec 4.6): exactly 10 category keys, no extras; ≤3 questions with distinct IDs `q1`–`q3`; length caps; every `sourceQuote` found in the narrative after normalization (NFC, whitespace collapse, curly→straight quotes, dashes→`-`, `…`→`...`, case-sensitive); after lowercasing and stripping punctuation, the words of `text` equal the words of its `sourceQuote`, optionally minus ONE leading connector from the fixed list in `server/src/validation/leadingConnectors.ts` (and, then, also, so, tapos, saka), so dropped negations or trailing words are rejected; question/reason pass the deny-list and contain no URLs.
 - Span overlap (spec 4.6.3) is **not** validated; the prompt avoids it and human evaluation checks it.
 - Deny-list applies to `question` and `reason` only — never filter or alter the parent's own words.
+- The language of questions and reasons is decided in code, not by the model (spec 4.5): `server/src/historyOrganizer/detectLanguage.ts` returns `'fil'` when Filipino function words are ≥ 15% of all words (Taglish counts as Filipino), else `'en'`; the user message carries the explicit instruction. Names like “Lola” never switch an English story to Filipino.
 - Render all generated strings as plain text. Never `dangerouslySetInnerHTML`.
 
 ### Product behavior

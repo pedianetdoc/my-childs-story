@@ -2,7 +2,7 @@ import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { CATEGORY_KEYS, type OrganizeStoryResult } from '@my-childs-story/shared';
 import { createApp, type AppOptions } from '../src/app.js';
-import { PROMPT_VERSION } from '../src/historyOrganizer/index.js';
+import { LANGUAGE_INSTRUCTIONS, PROMPT_VERSION } from '../src/historyOrganizer/index.js';
 import { FICTIONAL_NARRATIVE, validResponse } from './fixtures/fictionalStory.js';
 import { hangingProvider, jsonProvider, mockProvider, type MockProvider } from './helpers/mockProvider.js';
 
@@ -217,6 +217,30 @@ describe('POST /api/organize-story — invalid input (AC-02)', () => {
     expect(res.status).toBe(400);
     expect(JSON.stringify(res.body)).toContain('Please choose a girl, a boy or prefer not to say.');
     expect(JSON.stringify(res.body)).not.toContain('SECRET');
+  });
+
+  it('sends the code-decided question language to the model (English → English, Taglish → Filipino)', async () => {
+    const provider = mockProvider(() => ({ content: JSON.stringify(emptyResponse()), model: 'm' }));
+    const { app } = setup(provider, { rateLimitMax: 100 });
+
+    const english = await post(app, {
+      childAge: { value: 4, unit: 'years' },
+      narrative: 'My main worry is that he does not answer to his name. His Lola says he loves trains.',
+    });
+    expect(english.status).toBe(200);
+    expect(provider.calls[0]?.user).toContain(LANGUAGE_INSTRUCTIONS.en);
+    expect(provider.calls[0]?.user).not.toContain(LANGUAGE_INSTRUCTIONS.fil);
+
+    const taglish = await post(app, {
+      childAge: { value: 3, unit: 'years' },
+      narrative: 'Nag-aalala ako kasi hindi pa siya nagsasalita ng sentences. Minsan he points pag gusto niya ng water.',
+    });
+    expect(taglish.status).toBe(200);
+    expect(provider.calls[1]?.user).toContain(LANGUAGE_INSTRUCTIONS.fil);
+
+    // The fixture story is English with one Filipino sentence: still English.
+    await post(app, validBody);
+    expect(provider.calls[2]?.user).toContain(LANGUAGE_INSTRUCTIONS.en);
   });
 
   it('rejects malformed JSON with 400 and no AI call', async () => {
