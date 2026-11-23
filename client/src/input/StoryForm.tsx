@@ -13,6 +13,8 @@ import {
 import { FICTIONAL_EXAMPLE } from '../content/fictionalExample';
 import { GUIDING_PROMPTS } from '../content/guidingPrompts';
 import { validateStoryInput, type StoryInputErrors } from './validateStoryInput';
+import type { DictationLanguage } from '../voice/dictationController';
+import { VoiceInput, type VoiceInputHandle } from '../voice/VoiceInput';
 
 export const LIMIT_MESSAGE =
   `The story can be at most ${NARRATIVE_MAX_CHARS} characters. ` +
@@ -25,6 +27,8 @@ export type StoryFormProps = {
   onAgeTextChange: (value: string) => void;
   onUnitChange: (value: AgeUnit) => void;
   onNarrativeChange: (value: string) => void;
+  dictationLanguage: DictationLanguage;
+  onDictationLanguageChange: (value: DictationLanguage) => void;
   /** Called only with input that passed validation. */
   onSubmit: (request: OrganizeStoryRequest) => void;
   busy?: boolean;
@@ -40,6 +44,10 @@ export function StoryForm(props: StoryFormProps) {
   const [limitHit, setLimitHit] = useState(false);
   const ageRef = useRef<HTMLInputElement>(null);
   const storyRef = useRef<HTMLTextAreaElement>(null);
+  const voiceRef = useRef<VoiceInputHandle>(null);
+  /** Latest story text, updated synchronously so dictation never appends to stale text. */
+  const textRef = useRef(narrative);
+  textRef.current = narrative;
 
   const count = codePointLength(narrative.trim());
   const isExample = narrative === FICTIONAL_EXAMPLE.narrative;
@@ -52,7 +60,15 @@ export function StoryForm(props: StoryFormProps) {
     }
     setLimitHit(false);
     if (errors.narrative) setErrors(({ narrative: _n, ...rest }) => rest);
+    textRef.current = value;
     props.onNarrativeChange(value);
+  };
+
+  /** Dictated text goes at the end of the same field; the controller keeps it within the limit. */
+  const appendDictation = (chunk: string) => {
+    textRef.current += chunk;
+    if (errors.narrative) setErrors(({ narrative: _n, ...rest }) => rest);
+    props.onNarrativeChange(textRef.current);
   };
 
   const handleAge = (value: string) => {
@@ -70,6 +86,8 @@ export function StoryForm(props: StoryFormProps) {
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
+    // Submitting is always the parent's action; stop listening first.
+    voiceRef.current?.stop();
     if (busy) return;
     const result = validateStoryInput({ ageText, unit, narrative });
     if (!result.ok) {
@@ -165,6 +183,14 @@ export function StoryForm(props: StoryFormProps) {
             {errors.narrative}
           </p>
         )}
+        <VoiceInput
+          language={props.dictationLanguage}
+          onLanguageChange={props.onDictationLanguageChange}
+          getText={() => textRef.current}
+          appendText={appendDictation}
+          disabled={busy}
+          controlRef={voiceRef}
+        />
         {isExample && (
           <p className="example-label" role="note">
             Fictional example — not a real child. You can edit it or replace it with your own
